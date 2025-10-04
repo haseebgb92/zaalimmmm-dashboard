@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { personalExpenses } from '@/lib/db/schema';
-import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { and, gte, lte, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,23 +9,18 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
-    let query = db
+    const whereConditions = [];
+    if (startDate) whereConditions.push(gte(personalExpenses.date, startDate));
+    if (endDate) whereConditions.push(lte(personalExpenses.date, endDate));
+
+    const data = await db
       .select({
         head: personalExpenses.head,
         total: sql<number>`SUM(CAST(${personalExpenses.amount} AS DECIMAL))`,
         entries: sql<number>`COUNT(*)`,
       })
-      .from(personalExpenses);
-
-    const conditions = [];
-    if (startDate) conditions.push(gte(personalExpenses.date, startDate));
-    if (endDate) conditions.push(lte(personalExpenses.date, endDate));
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
-    const data = await query
+      .from(personalExpenses)
+      .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
       .groupBy(personalExpenses.head)
       .orderBy(personalExpenses.head);
 

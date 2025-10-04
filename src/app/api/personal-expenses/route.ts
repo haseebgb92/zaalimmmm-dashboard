@@ -18,18 +18,17 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');
     const head = searchParams.get('head');
 
-    let query = db.select().from(personalExpenses);
+    const whereConditions = [];
+    if (startDate) whereConditions.push(gte(personalExpenses.date, startDate));
+    if (endDate) whereConditions.push(lte(personalExpenses.date, endDate));
+    if (head) whereConditions.push(eq(personalExpenses.head, head));
 
-    const conditions = [];
-    if (startDate) conditions.push(gte(personalExpenses.date, startDate));
-    if (endDate) conditions.push(lte(personalExpenses.date, endDate));
-    if (head) conditions.push(eq(personalExpenses.head, head));
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
-    const data = await query.orderBy(personalExpenses.date, personalExpenses.createdAt);
+    const data = await db
+      .select()
+      .from(personalExpenses)
+      .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+      .orderBy(personalExpenses.date, personalExpenses.createdAt);
+    
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching personal expenses:', error);

@@ -15,8 +15,8 @@ export default function PersonalExpensesPage() {
       try {
         const response = await fetch('/api/settings');
         if (response.ok) {
-          const settings = await response.json();
-          const currencySetting = settings.find((s: any) => s.key === 'CURRENCY');
+        const settings = await response.json();
+        const currencySetting = settings.find((s: { key: string; value: string }) => s.key === 'CURRENCY');
           if (currencySetting) {
             setCurrency(currencySetting.value);
           }

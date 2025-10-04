@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,7 +50,7 @@ export function PersonalExpensesTable({ currency }: PersonalExpensesTableProps) 
     notes: '',
   });
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -77,11 +77,11 @@ export function PersonalExpensesTable({ currency }: PersonalExpensesTableProps) 
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange.start, dateRange.end, selectedHead]);
 
   useEffect(() => {
     fetchData();
-  }, [dateRange, selectedHead]);
+  }, [dateRange, selectedHead, fetchData]);
 
   const handleAdd = async () => {
     if (!addForm.head || !addForm.amount) {
@@ -182,10 +182,6 @@ export function PersonalExpensesTable({ currency }: PersonalExpensesTableProps) 
     return Array.from(heads).sort();
   };
 
-  const getTotalForHead = (head: string) => {
-    const total = totals.find(t => t.head === head);
-    return total ? total.total : 0;
-  };
 
   if (loading) {
     return (
