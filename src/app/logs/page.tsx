@@ -33,7 +33,7 @@ interface ExpensesData {
 }
 
 export default function LogsPage() {
-  const [dateRange, setDateRange] = useState<DateRange>(getDateRange('today'));
+  const [dateRange, setDateRange] = useState<DateRange>(getDateRange('thisMonth'));
   const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [expensesData, setExpensesData] = useState<ExpensesData[]>([]);
   const [loading, setLoading] = useState(true);
