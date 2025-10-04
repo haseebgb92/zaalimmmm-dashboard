@@ -92,14 +92,83 @@ export default function SettingsPage() {
     document.body.removeChild(a);
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'sales' | 'expenses') => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'sales' | 'expenses') => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = () => {
-      // Here you would implement the import logic
-      toast.info(`Import functionality for ${type} will be implemented`);
+    reader.onload = async (e) => {
+      try {
+        const content = e.target?.result as string;
+        
+        if (file.name.endsWith('.csv')) {
+          // Parse CSV
+          const lines = content.split('\n');
+          const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+          const data = [];
+          
+          for (let i = 1; i < lines.length; i++) {
+            if (lines[i].trim()) {
+              const values = lines[i].split(',').map(v => v.replace(/"/g, '').trim());
+              const row: Record<string, unknown> = {};
+              
+              headers.forEach((header, index) => {
+                const value = values[index];
+                if (header === 'date') {
+                  row[header] = value;
+                } else if (header === 'source') {
+                  row[header] = value;
+                } else if (header === 'orders') {
+                  row[header] = parseInt(value) || 0;
+                } else if (header === 'gross_amount' || header === 'amount' || header === 'qty' || header === 'unit_price') {
+                  row[header] = parseFloat(value) || 0;
+                } else {
+                  row[header] = value;
+                }
+              });
+              
+              data.push(row);
+            }
+          }
+          
+          // Send to import API
+          const response = await fetch('/api/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, data }),
+          });
+          
+          const result = await response.json();
+          
+          if (response.ok) {
+            toast.success(result.message);
+          } else {
+            toast.error(result.error || 'Import failed');
+          }
+        } else if (file.name.endsWith('.json')) {
+          // Parse JSON
+          const data = JSON.parse(content);
+          
+          const response = await fetch('/api/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, data }),
+          });
+          
+          const result = await response.json();
+          
+          if (response.ok) {
+            toast.success(result.message);
+          } else {
+            toast.error(result.error || 'Import failed');
+          }
+        } else {
+          toast.error('Unsupported file format. Please use CSV or JSON.');
+        }
+      } catch (error) {
+        console.error('Import error:', error);
+        toast.error('Failed to import file. Please check the format.');
+      }
     };
     reader.readAsText(file);
   };

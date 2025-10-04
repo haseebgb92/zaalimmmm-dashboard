@@ -25,16 +25,8 @@ export interface DateRange {
 
 export function getDateRange(kind: DateRangeKind, customStart?: string, customEnd?: string): DateRange {
   try {
-    const now = dayjs.tz('Asia/Karachi');
-    if (!now.isValid()) {
-      // Fallback to UTC if timezone fails
-      const nowUTC = dayjs.utc();
-      return {
-        start: nowUTC.format('YYYY-MM-DD'),
-        end: nowUTC.format('YYYY-MM-DD'),
-        kind: 'today'
-      };
-    }
+    // Use UTC for now to avoid timezone issues
+    const now = dayjs.utc();
   
   switch (kind) {
     case 'today':
