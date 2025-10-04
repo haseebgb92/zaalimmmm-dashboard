@@ -99,18 +99,24 @@ export async function GET(request: NextRequest) {
       data.netProfit = data.spotSales + foodpandaProfit - data.expenses;
     });
 
-    // Expenses by item
+    // Expenses by item with detailed information
     const expensesByItem = expensesData.reduce((acc, expense) => {
       const item = expense.item;
       if (!acc[item]) {
-        acc[item] = { total: 0, qty: 0 };
+        acc[item] = { 
+          total: 0, 
+          qty: 0, 
+          unit: expense.unit || 'units',
+          entries: 0
+        };
       }
       acc[item].total += parseFloat(expense.amount);
       if (expense.qty) {
         acc[item].qty += parseFloat(expense.qty);
       }
+      acc[item].entries += 1;
       return acc;
-    }, {} as Record<string, { total: number; qty: number }>);
+    }, {} as Record<string, { total: number; qty: number; unit: string; entries: number }>);
 
     return NextResponse.json({
       kpis: {

@@ -27,7 +27,7 @@ interface SummaryData {
     netProfit: number;
     expenses: number;
   }>;
-  expensesByItem: Record<string, { total: number; qty: number }>;
+  expensesByItem: Record<string, { total: number; qty: number; unit: string; entries: number }>;
 }
 
 export default function Dashboard() {

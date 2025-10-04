@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { KeyItemsBreakdown } from '@/components/key-items-breakdown';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -38,7 +39,7 @@ interface DailyData {
 
 interface ChartsProps {
   dailySeries: DailyData[];
-  expensesByItem: Record<string, { total: number; qty: number }>;
+  expensesByItem: Record<string, { total: number; qty: number; unit: string; entries: number }>;
   currency: string;
 }
 
@@ -182,6 +183,12 @@ export function Charts({ dailySeries, expensesByItem, currency }: ChartsProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Key Items Breakdown */}
+      <KeyItemsBreakdown 
+        expensesByItem={expensesByItem}
+        currency={currency}
+      />
     </div>
   );
 }
