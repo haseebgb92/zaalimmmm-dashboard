@@ -31,7 +31,7 @@ interface SummaryData {
 }
 
 export default function Dashboard() {
-  const [dateRange, setDateRange] = useState<DateRange>(getDateRange('thisMonth'));
+  const [dateRange, setDateRange] = useState<DateRange>(getDateRange('today'));
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [currency, setCurrency] = useState('PKR');

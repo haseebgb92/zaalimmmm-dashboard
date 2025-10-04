@@ -25,13 +25,8 @@ export interface DateRange {
 
 export function getDateRange(kind: DateRangeKind, customStart?: string, customEnd?: string): DateRange {
   try {
-    // Use Asia/Karachi timezone for consistent local time handling
-    const now = dayjs.tz('Asia/Karachi');
-    
-    // If timezone fails, fallback to UTC
-    if (!now.isValid()) {
-      throw new Error('Invalid timezone');
-    }
+    // Use UTC for consistent date handling
+    const now = dayjs.utc();
   
   switch (kind) {
     case 'today':
@@ -90,7 +85,7 @@ export function getDateRange(kind: DateRangeKind, customStart?: string, customEn
       throw new Error(`Unknown date range kind: ${kind}`);
   }
   } catch {
-    // Fallback to UTC if timezone fails (e.g., during SSR)
+    // Fallback to today's date if anything fails
     const nowUTC = dayjs.utc();
     return {
       start: nowUTC.format('YYYY-MM-DD'),
@@ -134,10 +129,6 @@ export function formatDateTime(date: string): string {
 }
 
 export function getTodayInKarachi(): string {
-  try {
-    return dayjs.tz('Asia/Karachi').format('YYYY-MM-DD');
-  } catch {
-    // Fallback to UTC if timezone fails (e.g., during SSR)
-    return dayjs.utc().format('YYYY-MM-DD');
-  }
+  // Use UTC for consistent date handling
+  return dayjs.utc().format('YYYY-MM-DD');
 }
