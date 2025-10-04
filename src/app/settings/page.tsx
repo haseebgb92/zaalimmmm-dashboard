@@ -78,7 +78,7 @@ export default function SettingsPage() {
     if (type === 'sales') {
       csvContent = 'date,source,orders,gross_amount,notes\n2025-01-01,spot,45,125000.00,"Evening rush"\n2025-01-01,foodpanda,62,98000.00,"Rainy day"';
     } else {
-      csvContent = 'date,category,item,vendor,qty,unit,unit_price,amount,notes\n2025-01-01,Ingredients,Chicken,Metro,25,kg,620.00,15500.00,"Fresh"\n2025-01-01,Bread,Bread Small,Bakery,60,packs,150.00,,"Auto compute"';
+      csvContent = 'date,item,qty,unit,amount,notes\n2025-01-01,Chicken,25,kg,15500.00,"Fresh"\n2025-01-01,Bread Small,60,packs,9000.00,"Morning delivery"';
     }
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
