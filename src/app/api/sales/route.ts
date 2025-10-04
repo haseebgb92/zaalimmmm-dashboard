@@ -28,9 +28,8 @@ export async function GET(request: NextRequest) {
     const conditions = [];
     
     if (startDate && endDate) {
-      const start = dayjs.tz(startDate, 'Asia/Karachi').startOf('day').utc().format('YYYY-MM-DD');
-      const end = dayjs.tz(endDate, 'Asia/Karachi').endOf('day').utc().format('YYYY-MM-DD');
-      conditions.push(and(gte(sales.date, start), lte(sales.date, end)));
+      // Use dates as-is since they're already in YYYY-MM-DD format
+      conditions.push(and(gte(sales.date, startDate), lte(sales.date, endDate)));
     }
 
     if (source && (source === 'spot' || source === 'foodpanda')) {
@@ -57,8 +56,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = salesSchema.parse(body);
 
-    // Convert date to Asia/Karachi timezone
-    const date = dayjs.tz(validatedData.date, 'Asia/Karachi').startOf('day').utc().format('YYYY-MM-DD');
+    // Store date as-is since it's already in YYYY-MM-DD format
+    const date = validatedData.date;
 
     const newSale = await db.insert(sales).values({
       date,

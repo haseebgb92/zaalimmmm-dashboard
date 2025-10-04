@@ -38,9 +38,8 @@ export async function GET(request: NextRequest) {
     const conditions = [];
     
     if (startDate && endDate) {
-      const start = dayjs.tz(startDate, 'Asia/Karachi').startOf('day').utc().format('YYYY-MM-DD');
-      const end = dayjs.tz(endDate, 'Asia/Karachi').endOf('day').utc().format('YYYY-MM-DD');
-      conditions.push(and(gte(expenses.date, start), lte(expenses.date, end)));
+      // Use dates as-is since they're already in YYYY-MM-DD format
+      conditions.push(and(gte(expenses.date, startDate), lte(expenses.date, endDate)));
     }
 
     if (category) {
@@ -67,8 +66,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = expensesSchema.parse(body);
 
-    // Convert date to Asia/Karachi timezone
-    const date = dayjs.tz(validatedData.date, 'Asia/Karachi').startOf('day').utc().format('YYYY-MM-DD');
+    // Store date as-is since it's already in YYYY-MM-DD format
+    const date = validatedData.date;
 
     // Auto-compute amount if qty and unitPrice are provided
     let amount = validatedData.amount;

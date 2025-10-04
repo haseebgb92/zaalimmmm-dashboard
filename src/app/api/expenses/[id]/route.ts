@@ -34,8 +34,8 @@ export async function PUT(
     const updateData: Record<string, unknown> = { ...validatedData };
     
     if (validatedData.date) {
-      // Convert date to Asia/Karachi timezone
-      updateData.date = dayjs.tz(validatedData.date, 'Asia/Karachi').startOf('day').utc().format('YYYY-MM-DD');
+      // Store date as-is since it's already in YYYY-MM-DD format
+      updateData.date = validatedData.date;
     }
 
     if (validatedData.qty) {

@@ -21,9 +21,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Start and end dates are required' }, { status: 400 });
     }
 
-    // Convert dates to Asia/Karachi timezone
-    const start = dayjs.tz(startDate, 'Asia/Karachi').startOf('day').utc().format('YYYY-MM-DD');
-    const end = dayjs.tz(endDate, 'Asia/Karachi').endOf('day').utc().format('YYYY-MM-DD');
+    // Use dates as-is since they're already in YYYY-MM-DD format
+    const start = startDate;
+    const end = endDate;
 
     // Get settings
     const fpProfitRateSetting = await db.select().from(settings).where(eq(settings.key, 'FP_PROFIT_RATE')).limit(1);
