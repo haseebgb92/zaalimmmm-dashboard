@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Plus } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/date-utils';
+import { formatCurrency, formatDate, getTodayInKarachi } from '@/lib/date-utils';
 import { toast } from 'sonner';
 
 interface ExpensesData {
@@ -37,7 +37,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<ExpensesData>>({});
   const [addForm, setAddForm] = useState({
-    date: '',
+    date: getTodayInKarachi(),
     item: '',
     qty: '',
     unit: '',
@@ -122,7 +122,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
         toast.success('Expense added successfully');
         setIsAddDialogOpen(false);
         setAddForm({
-          date: '',
+          date: getTodayInKarachi(),
           item: '',
           qty: '',
           unit: '',

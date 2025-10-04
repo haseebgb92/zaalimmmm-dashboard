@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Edit, Trash2, Plus } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/date-utils';
+import { formatCurrency, formatDate, getTodayInKarachi } from '@/lib/date-utils';
 import { toast } from 'sonner';
 
 interface SalesData {
@@ -31,7 +31,7 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<SalesData>>({});
   const [addForm, setAddForm] = useState({
-    date: '',
+    date: getTodayInKarachi(),
     source: 'spot' as 'spot' | 'foodpanda',
     orders: 0,
     grossAmount: '',
@@ -112,7 +112,7 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
         toast.success('Sale added successfully');
         setIsAddDialogOpen(false);
         setAddForm({
-          date: '',
+          date: getTodayInKarachi(),
           source: 'spot',
           orders: 0,
           grossAmount: '',
