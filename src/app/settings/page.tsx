@@ -124,11 +124,16 @@ export default function SettingsPage() {
                 if (header === 'date') {
                   // Convert date format from M/D/YYYY to YYYY-MM-DD
                   if (value) {
-                    const date = new Date(value);
-                    if (!isNaN(date.getTime())) {
-                      row[header] = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+                    // Parse date without timezone conversion
+                    const parts = value.split('/');
+                    if (parts.length === 3) {
+                      const month = parts[0].padStart(2, '0');
+                      const day = parts[1].padStart(2, '0');
+                      const year = parts[2];
+                      row[header] = `${year}-${month}-${day}`;
                     } else {
-                      row[header] = value; // Keep original if parsing fails
+                      // If already in YYYY-MM-DD format, use as-is
+                      row[header] = value;
                     }
                   } else {
                     row[header] = value;
