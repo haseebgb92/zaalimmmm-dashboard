@@ -7,7 +7,7 @@ import { DateRangePicker } from '@/components/date-range-picker';
 import { KPICards } from '@/components/kpi-cards';
 import { Charts } from '@/components/charts';
 import { DateRange, getDateRange } from '@/lib/date-utils';
-import { Download, Settings, FileText } from 'lucide-react';
+import { Download, Settings, FileText, User } from 'lucide-react';
 import Link from 'next/link';
 
 interface SummaryData {
@@ -112,6 +112,12 @@ export default function Dashboard() {
               <Button variant="outline">
                 <FileText className="h-4 w-4 mr-2" />
                 Logs
+              </Button>
+            </Link>
+            <Link href="/personal">
+              <Button variant="outline">
+                <User className="h-4 w-4 mr-2" />
+                Personal
               </Button>
             </Link>
             <Link href="/settings">

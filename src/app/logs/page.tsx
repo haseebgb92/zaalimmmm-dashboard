@@ -7,7 +7,7 @@ import { DateRangePicker } from '@/components/date-range-picker';
 import { SalesTable } from '@/components/sales-table';
 import { ExpensesTable } from '@/components/expenses-table';
 import { DateRange, getDateRange } from '@/lib/date-utils';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, User, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -91,16 +91,32 @@ export default function LogsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Link href="/">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Daily Logs</h1>
-            <p className="text-gray-600">Manage sales and expenses</p>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Daily Logs</h1>
+              <p className="text-gray-600">Manage sales and expenses</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/personal">
+              <Button variant="outline" size="sm">
+                <User className="h-4 w-4 mr-2" />
+                Personal
+              </Button>
+            </Link>
+            <Link href="/settings">
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+            </Link>
           </div>
         </div>
 

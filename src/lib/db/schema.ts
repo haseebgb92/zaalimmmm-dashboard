@@ -32,9 +32,23 @@ export const settings = pgTable('settings', {
   value: text('value').notNull(),
 });
 
+export const personalExpenses = pgTable('personal_expenses', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  date: date('date').notNull(),
+  head: text('head').notNull(), // Person name (Shahbaz, Hasnain, etc.)
+  amount: numeric('amount', { precision: 12, scale: 2 }).notNull(), // Can be positive (credit) or negative (debit)
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  dateIdx: index('personal_expenses_date_idx').on(table.date),
+  headIdx: index('personal_expenses_head_idx').on(table.head),
+}));
+
 export type Sales = typeof sales.$inferSelect;
 export type NewSales = typeof sales.$inferInsert;
 export type Expenses = typeof expenses.$inferSelect;
 export type NewExpenses = typeof expenses.$inferInsert;
 export type Settings = typeof settings.$inferSelect;
 export type NewSettings = typeof settings.$inferInsert;
+export type PersonalExpenses = typeof personalExpenses.$inferSelect;
+export type NewPersonalExpenses = typeof personalExpenses.$inferInsert;
