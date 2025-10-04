@@ -17,9 +17,15 @@ const expensesSchema = z.object({
   qty: z.number().positive().optional(),
   unit: z.string().optional(),
   unitPrice: z.number().positive().optional(),
-  amount: z.number().positive(),
+  amount: z.number().positive().optional(),
   vendor: z.string().optional(),
   notes: z.string().optional(),
+}).refine((data) => {
+  // Either amount is provided, or both qty and unitPrice are provided
+  return data.amount || (data.qty && data.unitPrice);
+}, {
+  message: "Either amount must be provided, or both qty and unitPrice must be provided",
+  path: ["amount"]
 });
 
 export async function GET(request: NextRequest) {
@@ -66,8 +72,13 @@ export async function POST(request: NextRequest) {
 
     // Auto-compute amount if qty and unitPrice are provided
     let amount = validatedData.amount;
-    if (validatedData.qty && validatedData.unitPrice && !validatedData.amount) {
+    if (validatedData.qty && validatedData.unitPrice) {
       amount = validatedData.qty * validatedData.unitPrice;
+    }
+
+    // Ensure amount is defined (should be guaranteed by the refine validation)
+    if (!amount) {
+      return NextResponse.json({ error: 'Amount is required' }, { status: 400 });
     }
 
     const newExpense = await db.insert(expenses).values({
