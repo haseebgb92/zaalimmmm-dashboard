@@ -122,7 +122,17 @@ export default function SettingsPage() {
               headers.forEach((header, index) => {
                 const value = values[index] || '';
                 if (header === 'date') {
-                  row[header] = value;
+                  // Convert date format from M/D/YYYY to YYYY-MM-DD
+                  if (value) {
+                    const date = new Date(value);
+                    if (!isNaN(date.getTime())) {
+                      row[header] = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+                    } else {
+                      row[header] = value; // Keep original if parsing fails
+                    }
+                  } else {
+                    row[header] = value;
+                  }
                 } else if (header === 'source') {
                   row[header] = value;
                 } else if (header === 'orders') {
