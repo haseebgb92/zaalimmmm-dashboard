@@ -1,0 +1,91 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { expenses } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import { z } from 'zod';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const expensesUpdateSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  category: z.string().min(1).optional(),
+  item: z.string().optional(),
+  qty: z.number().positive().optional(),
+  unit: z.string().optional(),
+  unitPrice: z.number().positive().optional(),
+  amount: z.number().positive().optional(),
+  vendor: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const body = await request.json();
+    const validatedData = expensesUpdateSchema.parse(body);
+
+    const updateData: any = { ...validatedData };
+    
+    if (validatedData.date) {
+      // Convert date to Asia/Karachi timezone
+      updateData.date = dayjs.tz(validatedData.date, 'Asia/Karachi').startOf('day').utc().format('YYYY-MM-DD');
+    }
+
+    if (validatedData.qty) {
+      updateData.qty = validatedData.qty.toString();
+    }
+
+    if (validatedData.unitPrice) {
+      updateData.unitPrice = validatedData.unitPrice.toString();
+    }
+
+    if (validatedData.amount) {
+      updateData.amount = validatedData.amount.toString();
+    }
+
+    const updatedExpense = await db
+      .update(expenses)
+      .set(updateData)
+      .where(eq(expenses.id, params.id))
+      .returning();
+
+    if (updatedExpense.length === 0) {
+      return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedExpense[0]);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 });
+    }
+    console.error('Error updating expense:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const deletedExpense = await db
+      .delete(expenses)
+      .where(eq(expenses.id, params.id))
+      .returning();
+
+    if (deletedExpense.length === 0) {
+      return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Expense deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting expense:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
