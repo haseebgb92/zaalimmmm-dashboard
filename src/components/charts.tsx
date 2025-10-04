@@ -52,6 +52,7 @@ export function Charts({ dailySeries, expensesByCategory, currency }: ChartsProp
       },
       tooltip: {
         callbacks: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           label: function(context: any) {
             return `${context.dataset.label}: ${formatCurrency(context.parsed.y, currency)}`;
           }
@@ -62,6 +63,7 @@ export function Charts({ dailySeries, expensesByCategory, currency }: ChartsProp
       y: {
         beginAtZero: true,
         ticks: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           callback: function(value: any) {
             return formatCurrency(value, currency);
           }
@@ -163,6 +165,7 @@ export function Charts({ dailySeries, expensesByCategory, currency }: ChartsProp
                     },
                     tooltip: {
                       callbacks: {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         label: function(context: any) {
                           const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
                           const percentage = ((context.parsed / total) * 100).toFixed(1);

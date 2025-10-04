@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { sales, expenses, settings } from '@/lib/db/schema';
-import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { eq, and, gte, lte } from 'drizzle-orm';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(isSameOrBefore);
 
 export async function GET(request: NextRequest) {
   try {
@@ -92,7 +94,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Calculate net profit for each day
-    dailyData.forEach((data, dateStr) => {
+    dailyData.forEach((data) => {
       const foodpandaProfit = data.foodpandaSales * fpProfitRate;
       data.netProfit = data.spotSales + foodpandaProfit - data.expenses;
     });

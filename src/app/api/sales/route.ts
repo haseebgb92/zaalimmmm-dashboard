@@ -25,19 +25,25 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('end');
     const source = searchParams.get('source');
 
-    let query = db.select().from(sales);
-
+    const conditions = [];
+    
     if (startDate && endDate) {
       const start = dayjs.tz(startDate, 'Asia/Karachi').startOf('day').utc().format('YYYY-MM-DD');
       const end = dayjs.tz(endDate, 'Asia/Karachi').endOf('day').utc().format('YYYY-MM-DD');
-      query = query.where(and(gte(sales.date, start), lte(sales.date, end)));
+      conditions.push(and(gte(sales.date, start), lte(sales.date, end)));
     }
 
     if (source && (source === 'spot' || source === 'foodpanda')) {
-      query = query.where(eq(sales.source, source));
+      conditions.push(eq(sales.source, source));
     }
 
-    const salesData = await query.orderBy(sales.date, sales.createdAt);
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    
+    const salesData = await db
+      .select()
+      .from(sales)
+      .where(whereClause)
+      .orderBy(sales.date, sales.createdAt);
 
     return NextResponse.json(salesData);
   } catch (error) {
@@ -65,7 +71,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newSale[0], { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Validation error', details: error.issues }, { status: 400 });
     }
     console.error('Error creating sale:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

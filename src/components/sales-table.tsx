@@ -70,7 +70,7 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
       } else {
         toast.error('Failed to update sale');
       }
-    } catch (error) {
+    } catch {
       toast.error('Error updating sale');
     }
   };
@@ -89,7 +89,7 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
       } else {
         toast.error('Failed to delete sale');
       }
-    } catch (error) {
+    } catch {
       toast.error('Error deleting sale');
     }
   };
@@ -122,7 +122,7 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
       } else {
         toast.error('Failed to add sale');
       }
-    } catch (error) {
+    } catch {
       toast.error('Error adding sale');
     }
   };

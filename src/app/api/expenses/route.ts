@@ -29,19 +29,25 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('end');
     const category = searchParams.get('category');
 
-    let query = db.select().from(expenses);
-
+    const conditions = [];
+    
     if (startDate && endDate) {
       const start = dayjs.tz(startDate, 'Asia/Karachi').startOf('day').utc().format('YYYY-MM-DD');
       const end = dayjs.tz(endDate, 'Asia/Karachi').endOf('day').utc().format('YYYY-MM-DD');
-      query = query.where(and(gte(expenses.date, start), lte(expenses.date, end)));
+      conditions.push(and(gte(expenses.date, start), lte(expenses.date, end)));
     }
 
     if (category) {
-      query = query.where(eq(expenses.category, category));
+      conditions.push(eq(expenses.category, category));
     }
 
-    const expensesData = await query.orderBy(expenses.date, expenses.createdAt);
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    
+    const expensesData = await db
+      .select()
+      .from(expenses)
+      .where(whereClause)
+      .orderBy(expenses.date, expenses.createdAt);
 
     return NextResponse.json(expensesData);
   } catch (error) {
@@ -79,7 +85,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newExpense[0], { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Validation error', details: error.issues }, { status: 400 });
     }
     console.error('Error creating expense:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

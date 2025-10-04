@@ -91,7 +91,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
       } else {
         toast.error('Failed to update expense');
       }
-    } catch (error) {
+    } catch {
       toast.error('Error updating expense');
     }
   };
@@ -110,7 +110,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
       } else {
         toast.error('Failed to delete expense');
       }
-    } catch (error) {
+    } catch {
       toast.error('Error deleting expense');
     }
   };
@@ -151,7 +151,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
       } else {
         toast.error('Failed to add expense');
       }
-    } catch (error) {
+    } catch {
       toast.error('Error adding expense');
     }
   };

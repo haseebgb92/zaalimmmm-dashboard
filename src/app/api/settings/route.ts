@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { settings } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+// import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 const settingsUpdateSchema = z.object({
@@ -78,7 +78,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(settingsObj);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Validation error', details: error.issues }, { status: 400 });
     }
     console.error('Error updating settings:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

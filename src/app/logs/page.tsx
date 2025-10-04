@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DateRangePicker } from '@/components/date-range-picker';
@@ -42,14 +42,6 @@ export default function LogsPage() {
   const [loading, setLoading] = useState(true);
   const [currency, setCurrency] = useState('PKR');
 
-  useEffect(() => {
-    fetchData();
-  }, [dateRange]);
-
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
   const fetchSettings = async () => {
     try {
       const response = await fetch('/api/settings');
@@ -62,7 +54,7 @@ export default function LogsPage() {
     }
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -88,7 +80,15 @@ export default function LogsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">

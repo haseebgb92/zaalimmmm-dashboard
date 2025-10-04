@@ -24,7 +24,17 @@ export interface DateRange {
 }
 
 export function getDateRange(kind: DateRangeKind, customStart?: string, customEnd?: string): DateRange {
-  const now = dayjs.tz('Asia/Karachi');
+  try {
+    const now = dayjs.tz('Asia/Karachi');
+    if (!now.isValid()) {
+      // Fallback to UTC if timezone fails
+      const nowUTC = dayjs.utc();
+      return {
+        start: nowUTC.format('YYYY-MM-DD'),
+        end: nowUTC.format('YYYY-MM-DD'),
+        kind: 'today'
+      };
+    }
   
   switch (kind) {
     case 'today':
@@ -82,6 +92,15 @@ export function getDateRange(kind: DateRangeKind, customStart?: string, customEn
     default:
       throw new Error(`Unknown date range kind: ${kind}`);
   }
+  } catch {
+    // Fallback to today's date if anything fails
+    const nowUTC = dayjs.utc();
+    return {
+      start: nowUTC.format('YYYY-MM-DD'),
+      end: nowUTC.format('YYYY-MM-DD'),
+      kind: 'today'
+    };
+  }
 }
 
 export function formatCurrency(amount: number, currency: string = 'PKR'): string {
@@ -94,9 +113,25 @@ export function formatCurrency(amount: number, currency: string = 'PKR'): string
 }
 
 export function formatDate(date: string): string {
-  return dayjs.tz(date, 'Asia/Karachi').format('MMM DD, YYYY');
+  try {
+    const parsed = dayjs.tz(date, 'Asia/Karachi');
+    if (!parsed.isValid()) {
+      return date; // Return original string if parsing fails
+    }
+    return parsed.format('MMM DD, YYYY');
+  } catch {
+    return date; // Return original string if formatting fails
+  }
 }
 
 export function formatDateTime(date: string): string {
-  return dayjs.tz(date, 'Asia/Karachi').format('MMM DD, YYYY h:mm A');
+  try {
+    const parsed = dayjs.tz(date, 'Asia/Karachi');
+    if (!parsed.isValid()) {
+      return date; // Return original string if parsing fails
+    }
+    return parsed.format('MMM DD, YYYY h:mm A');
+  } catch {
+    return date; // Return original string if formatting fails
+  }
 }

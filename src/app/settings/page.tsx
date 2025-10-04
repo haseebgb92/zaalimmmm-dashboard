@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Download, Upload, Save } from 'lucide-react';
+import { ArrowLeft, Download, Save } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -65,7 +65,7 @@ export default function SettingsPage() {
       } else {
         toast.error('Failed to save settings');
       }
-    } catch (error) {
+    } catch {
       toast.error('Error saving settings');
     } finally {
       setSaving(false);
@@ -97,8 +97,7 @@ export default function SettingsPage() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
+    reader.onload = () => {
       // Here you would implement the import logic
       toast.info(`Import functionality for ${type} will be implemented`);
     };

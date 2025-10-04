@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/date-range-picker';
@@ -36,14 +36,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [currency, setCurrency] = useState('PKR');
 
-  useEffect(() => {
-    fetchSummaryData();
-  }, [dateRange]);
-
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
   const fetchSettings = async () => {
     try {
       const response = await fetch('/api/settings');
@@ -56,7 +48,7 @@ export default function Dashboard() {
     }
   };
 
-  const fetchSummaryData = async () => {
+  const fetchSummaryData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -71,7 +63,15 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange]);
+
+  useEffect(() => {
+    fetchSummaryData();
+  }, [fetchSummaryData]);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   const handleExport = async () => {
     try {

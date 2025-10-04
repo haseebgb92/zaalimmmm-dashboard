@@ -20,13 +20,14 @@ const salesUpdateSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const validatedData = salesUpdateSchema.parse(body);
 
-    const updateData: any = { ...validatedData };
+    const updateData: Record<string, unknown> = { ...validatedData };
     
     if (validatedData.date) {
       // Convert date to Asia/Karachi timezone
@@ -40,7 +41,7 @@ export async function PUT(
     const updatedSale = await db
       .update(sales)
       .set(updateData)
-      .where(eq(sales.id, params.id))
+      .where(eq(sales.id, id))
       .returning();
 
     if (updatedSale.length === 0) {
@@ -50,7 +51,7 @@ export async function PUT(
     return NextResponse.json(updatedSale[0]);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Validation error', details: error.issues }, { status: 400 });
     }
     console.error('Error updating sale:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -59,12 +60,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const deletedSale = await db
       .delete(sales)
-      .where(eq(sales.id, params.id))
+      .where(eq(sales.id, id))
       .returning();
 
     if (deletedSale.length === 0) {

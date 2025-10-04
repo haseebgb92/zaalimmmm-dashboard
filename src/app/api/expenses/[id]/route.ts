@@ -24,13 +24,14 @@ const expensesUpdateSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const validatedData = expensesUpdateSchema.parse(body);
 
-    const updateData: any = { ...validatedData };
+    const updateData: Record<string, unknown> = { ...validatedData };
     
     if (validatedData.date) {
       // Convert date to Asia/Karachi timezone
@@ -52,7 +53,7 @@ export async function PUT(
     const updatedExpense = await db
       .update(expenses)
       .set(updateData)
-      .where(eq(expenses.id, params.id))
+      .where(eq(expenses.id, id))
       .returning();
 
     if (updatedExpense.length === 0) {
@@ -62,7 +63,7 @@ export async function PUT(
     return NextResponse.json(updatedExpense[0]);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Validation error', details: error.issues }, { status: 400 });
     }
     console.error('Error updating expense:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -71,12 +72,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const deletedExpense = await db
       .delete(expenses)
-      .where(eq(expenses.id, params.id))
+      .where(eq(expenses.id, id))
       .returning();
 
     if (deletedExpense.length === 0) {
