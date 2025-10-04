@@ -12,13 +12,10 @@ dayjs.extend(timezone);
 
 const expensesUpdateSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  category: z.string().min(1).optional(),
-  item: z.string().optional(),
+  item: z.string().min(1).optional(),
   qty: z.number().positive().optional(),
   unit: z.string().optional(),
-  unitPrice: z.number().positive().optional(),
   amount: z.number().positive().optional(),
-  vendor: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -40,10 +37,6 @@ export async function PUT(
 
     if (validatedData.qty) {
       updateData.qty = validatedData.qty.toString();
-    }
-
-    if (validatedData.unitPrice) {
-      updateData.unitPrice = validatedData.unitPrice.toString();
     }
 
     if (validatedData.amount) {

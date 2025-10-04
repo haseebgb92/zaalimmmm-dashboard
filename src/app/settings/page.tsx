@@ -137,7 +137,7 @@ export default function SettingsPage() {
                   row[header] = value;
                 } else if (header === 'orders') {
                   row[header] = parseInt(value) || 0;
-                } else if (header === 'gross_amount' || header === 'amount' || header === 'qty' || header === 'unit_price') {
+                } else if (header === 'gross_amount' || header === 'amount' || header === 'qty') {
                   row[header] = parseFloat(value) || 0;
                 } else {
                   row[header] = value;

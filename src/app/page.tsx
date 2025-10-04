@@ -27,7 +27,7 @@ interface SummaryData {
     netProfit: number;
     expenses: number;
   }>;
-  expensesByCategory: Record<string, number>;
+  expensesByItem: Record<string, { total: number; qty: number }>;
 }
 
 export default function Dashboard() {
@@ -147,7 +147,7 @@ export default function Dashboard() {
             {/* Charts */}
             <Charts 
               dailySeries={summaryData.dailySeries} 
-              expensesByCategory={summaryData.expensesByCategory}
+              expensesByItem={summaryData.expensesByItem}
               currency={currency}
             />
           </>

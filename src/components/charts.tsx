@@ -38,11 +38,11 @@ interface DailyData {
 
 interface ChartsProps {
   dailySeries: DailyData[];
-  expensesByCategory: Record<string, number>;
+  expensesByItem: Record<string, { total: number; qty: number }>;
   currency: string;
 }
 
-export function Charts({ dailySeries, expensesByCategory, currency }: ChartsProps) {
+export function Charts({ dailySeries, expensesByItem, currency }: ChartsProps) {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -102,10 +102,10 @@ export function Charts({ dailySeries, expensesByCategory, currency }: ChartsProp
   };
 
   const expensesData = {
-    labels: Object.keys(expensesByCategory),
+    labels: Object.keys(expensesByItem),
     datasets: [
       {
-        data: Object.values(expensesByCategory),
+        data: Object.values(expensesByItem).map(item => item.total),
         backgroundColor: [
           'rgb(239, 68, 68)',
           'rgb(245, 158, 11)',
@@ -149,7 +149,7 @@ export function Charts({ dailySeries, expensesByCategory, currency }: ChartsProp
       {/* Expenses Doughnut Chart */}
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle>Expenses by Category</CardTitle>
+          <CardTitle>Expenses by Item</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64 flex items-center justify-center">
@@ -169,7 +169,9 @@ export function Charts({ dailySeries, expensesByCategory, currency }: ChartsProp
                         label: function(context: any) {
                           const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
                           const percentage = ((context.parsed / total) * 100).toFixed(1);
-                          return `${context.label}: ${formatCurrency(context.parsed, currency)} (${percentage}%)`;
+                          const itemData = expensesByItem[context.label];
+                          const qtyText = itemData.qty > 0 ? ` (Qty: ${itemData.qty})` : '';
+                          return `${context.label}: ${formatCurrency(context.parsed, currency)} (${percentage}%)${qtyText}`;
                         }
                       }
                     }

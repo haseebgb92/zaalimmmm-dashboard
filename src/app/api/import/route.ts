@@ -13,19 +13,11 @@ const salesImportSchema = z.object({
 
 const expensesImportSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  category: z.string().min(1),
-  item: z.string().optional(),
-  vendor: z.string().optional(),
+  item: z.string().min(1),
   qty: z.number().positive().optional(),
   unit: z.string().optional(),
-  unit_price: z.number().positive().optional(),
-  amount: z.number().positive().optional(),
+  amount: z.number().positive(),
   notes: z.string().optional(),
-}).refine((data) => {
-  return data.amount || (data.qty && data.unit_price);
-}, {
-  message: "Either amount must be provided, or both qty and unit_price must be provided",
-  path: ["amount"]
 });
 
 export async function POST(request: NextRequest) {
@@ -74,25 +66,12 @@ export async function POST(request: NextRequest) {
         try {
           const validatedData = expensesImportSchema.parse(data[i]);
           
-          // Auto-compute amount if qty and unitPrice are provided
-          let amount = validatedData.amount;
-          if (validatedData.qty && validatedData.unit_price) {
-            amount = validatedData.qty * validatedData.unit_price;
-          }
-          
-          if (!amount) {
-            throw new Error('Amount is required');
-          }
-          
           await db.insert(expenses).values({
             date: validatedData.date,
-            category: validatedData.category,
             item: validatedData.item,
             qty: validatedData.qty?.toString(),
             unit: validatedData.unit,
-            unitPrice: validatedData.unit_price?.toString(),
-            amount: amount.toString(),
-            vendor: validatedData.vendor,
+            amount: validatedData.amount.toString(),
             notes: validatedData.notes,
           });
           

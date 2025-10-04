@@ -16,18 +16,14 @@ export const sales = pgTable('sales', {
 export const expenses = pgTable('expenses', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
   date: date('date').notNull(),
-  category: text('category').notNull(),
-  item: text('item'),
+  item: text('item').notNull(),
   qty: numeric('qty', { precision: 12, scale: 3 }),
   unit: text('unit'),
-  unitPrice: numeric('unit_price', { precision: 12, scale: 2 }),
   amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
-  vendor: text('vendor'),
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
   dateIdx: index('expenses_date_idx').on(table.date),
-  categoryIdx: index('expenses_category_idx').on(table.category),
   itemIdx: index('expenses_item_idx').on(table.item),
 }));
 

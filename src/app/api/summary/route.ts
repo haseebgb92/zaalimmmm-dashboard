@@ -99,15 +99,18 @@ export async function GET(request: NextRequest) {
       data.netProfit = data.spotSales + foodpandaProfit - data.expenses;
     });
 
-    // Expenses by category
-    const expensesByCategory = expensesData.reduce((acc, expense) => {
-      const category = expense.category;
-      if (!acc[category]) {
-        acc[category] = 0;
+    // Expenses by item
+    const expensesByItem = expensesData.reduce((acc, expense) => {
+      const item = expense.item;
+      if (!acc[item]) {
+        acc[item] = { total: 0, qty: 0 };
       }
-      acc[category] += parseFloat(expense.amount);
+      acc[item].total += parseFloat(expense.amount);
+      if (expense.qty) {
+        acc[item].qty += parseFloat(expense.qty);
+      }
       return acc;
-    }, {} as Record<string, number>);
+    }, {} as Record<string, { total: number; qty: number }>);
 
     return NextResponse.json({
       kpis: {
@@ -120,7 +123,7 @@ export async function GET(request: NextRequest) {
         averageOrderValue,
       },
       dailySeries: Array.from(dailyData.values()),
-      expensesByCategory,
+      expensesByItem,
     });
   } catch (error) {
     console.error('Error fetching summary:', error);

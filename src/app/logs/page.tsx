@@ -24,13 +24,10 @@ interface SalesData {
 interface ExpensesData {
   id: string;
   date: string;
-  category: string;
-  item?: string;
+  item: string;
   qty?: string;
   unit?: string;
-  unitPrice?: string;
   amount: string;
-  vendor?: string;
   notes?: string;
   createdAt: string;
 }

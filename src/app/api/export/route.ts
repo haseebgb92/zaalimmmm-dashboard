@@ -64,9 +64,9 @@ export async function GET(request: NextRequest) {
     });
 
     csvContent += '\nEXPENSES DATA\n';
-    csvContent += 'date,category,item,vendor,qty,unit,unit_price,amount,notes\n';
+    csvContent += 'date,item,qty,unit,amount,notes\n';
     expensesData.forEach(expense => {
-      csvContent += `${expense.date},${expense.category},"${expense.item || ''}","${expense.vendor || ''}",${expense.qty || ''},${expense.unit || ''},${expense.unitPrice || ''},${expense.amount},"${expense.notes || ''}"\n`;
+      csvContent += `${expense.date},"${expense.item}",${expense.qty || ''},${expense.unit || ''},${expense.amount},"${expense.notes || ''}"\n`;
     });
 
     // Data Dictionary
@@ -77,12 +77,9 @@ export async function GET(request: NextRequest) {
     csvContent += 'orders,Number of orders,integer,45\n';
     csvContent += 'gross_amount,Gross sales amount,decimal,125000.00\n';
     csvContent += 'notes,Additional notes,text,Evening rush\n';
-    csvContent += 'category,Expense category,text,Ingredients\n';
     csvContent += 'item,Expense item,text,Chicken\n';
-    csvContent += 'vendor,Vendor name,text,Metro\n';
     csvContent += 'qty,Quantity,decimal,25.000\n';
     csvContent += 'unit,Unit of measurement,text,kg\n';
-    csvContent += 'unit_price,Price per unit,decimal,620.00\n';
     csvContent += 'amount,Total amount,decimal,15500.00\n';
 
     return new NextResponse(csvContent, {

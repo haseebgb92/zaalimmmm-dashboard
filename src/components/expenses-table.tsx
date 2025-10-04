@@ -13,13 +13,10 @@ import { toast } from 'sonner';
 interface ExpensesData {
   id: string;
   date: string;
-  category: string;
-  item?: string;
+  item: string;
   qty?: string;
   unit?: string;
-  unitPrice?: string;
   amount: string;
-  vendor?: string;
   notes?: string;
   createdAt: string;
 }
@@ -41,13 +38,10 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
   const [editForm, setEditForm] = useState<Partial<ExpensesData>>({});
   const [addForm, setAddForm] = useState({
     date: '',
-    category: '',
     item: '',
     qty: '',
     unit: '',
-    unitPrice: '',
     amount: '',
-    vendor: '',
     notes: '',
   });
 
@@ -55,13 +49,10 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
     setEditingId(item.id);
     setEditForm({
       date: item.date,
-      category: item.category,
-      item: item.item || '',
+      item: item.item,
       qty: item.qty || '',
       unit: item.unit || '',
-      unitPrice: item.unitPrice || '',
       amount: item.amount,
-      vendor: item.vendor || '',
       notes: item.notes || '',
     });
   };
@@ -73,13 +64,10 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           date: editForm.date,
-          category: editForm.category,
           item: editForm.item,
           qty: editForm.qty ? parseFloat(editForm.qty) : undefined,
           unit: editForm.unit,
-          unitPrice: editForm.unitPrice ? parseFloat(editForm.unitPrice) : undefined,
           amount: editForm.amount ? parseFloat(editForm.amount) : undefined,
-          vendor: editForm.vendor,
           notes: editForm.notes,
         }),
       });
@@ -122,13 +110,10 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           date: addForm.date,
-          category: addForm.category,
           item: addForm.item,
           qty: addForm.qty ? parseFloat(addForm.qty) : undefined,
           unit: addForm.unit,
-          unitPrice: addForm.unitPrice ? parseFloat(addForm.unitPrice) : undefined,
           amount: addForm.amount ? parseFloat(addForm.amount) : undefined,
-          vendor: addForm.vendor,
           notes: addForm.notes,
         }),
       });
@@ -138,13 +123,10 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
         setIsAddDialogOpen(false);
         setAddForm({
           date: '',
-          category: '',
           item: '',
           qty: '',
           unit: '',
-          unitPrice: '',
           amount: '',
-          vendor: '',
           notes: '',
         });
         onRefresh();
@@ -186,13 +168,6 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                     onChange={(e) => setAddForm({ ...addForm, date: e.target.value })}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium">Category</label>
-                  <Input
-                    value={addForm.category}
-                    onChange={(e) => setAddForm({ ...addForm, category: e.target.value })}
-                  />
-                </div>
               </div>
               <div>
                 <label className="text-sm font-medium">Item</label>
@@ -218,33 +193,15 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                     onChange={(e) => setAddForm({ ...addForm, unit: e.target.value })}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium">Unit Price</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={addForm.unitPrice}
-                    onChange={(e) => setAddForm({ ...addForm, unitPrice: e.target.value })}
-                  />
-                </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Amount</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={addForm.amount}
-                    onChange={(e) => setAddForm({ ...addForm, amount: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Vendor</label>
-                  <Input
-                    value={addForm.vendor}
-                    onChange={(e) => setAddForm({ ...addForm, vendor: e.target.value })}
-                  />
-                </div>
+              <div>
+                <label className="text-sm font-medium">Amount</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={addForm.amount}
+                  onChange={(e) => setAddForm({ ...addForm, amount: e.target.value })}
+                />
               </div>
               <div>
                 <label className="text-sm font-medium">Notes</label>
@@ -283,11 +240,9 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
             <thead>
               <tr className="border-b">
                 <th className="text-left p-2">Date</th>
-                <th className="text-left p-2">Category</th>
                 <th className="text-left p-2">Item</th>
                 <th className="text-left p-2">Qty/Unit</th>
                 <th className="text-left p-2">Amount</th>
-                <th className="text-left p-2">Vendor</th>
                 <th className="text-left p-2">Notes</th>
                 <th className="text-left p-2">Actions</th>
               </tr>
@@ -309,21 +264,11 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                   <td className="p-2">
                     {editingId === item.id ? (
                       <Input
-                        value={editForm.category}
-                        onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                      />
-                    ) : (
-                      item.category
-                    )}
-                  </td>
-                  <td className="p-2">
-                    {editingId === item.id ? (
-                      <Input
                         value={editForm.item}
                         onChange={(e) => setEditForm({ ...editForm, item: e.target.value })}
                       />
                     ) : (
-                      item.item || '-'
+                      item.item
                     )}
                   </td>
                   <td className="p-2">
@@ -358,16 +303,6 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                       />
                     ) : (
                       formatCurrency(parseFloat(item.amount), currency)
-                    )}
-                  </td>
-                  <td className="p-2">
-                    {editingId === item.id ? (
-                      <Input
-                        value={editForm.vendor}
-                        onChange={(e) => setEditForm({ ...editForm, vendor: e.target.value })}
-                      />
-                    ) : (
-                      item.vendor || '-'
                     )}
                   </td>
                   <td className="p-2">

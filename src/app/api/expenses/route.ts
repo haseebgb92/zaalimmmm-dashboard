@@ -12,20 +12,11 @@ dayjs.extend(timezone);
 
 const expensesSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  category: z.string().min(1),
-  item: z.string().optional(),
+  item: z.string().min(1),
   qty: z.number().positive().optional(),
   unit: z.string().optional(),
-  unitPrice: z.number().positive().optional(),
-  amount: z.number().positive().optional(),
-  vendor: z.string().optional(),
+  amount: z.number().positive(),
   notes: z.string().optional(),
-}).refine((data) => {
-  // Either amount is provided, or both qty and unitPrice are provided
-  return data.amount || (data.qty && data.unitPrice);
-}, {
-  message: "Either amount must be provided, or both qty and unitPrice must be provided",
-  path: ["amount"]
 });
 
 export async function GET(request: NextRequest) {
@@ -33,7 +24,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('start');
     const endDate = searchParams.get('end');
-    const category = searchParams.get('category');
+    const item = searchParams.get('item');
 
     const conditions = [];
     
@@ -42,8 +33,8 @@ export async function GET(request: NextRequest) {
       conditions.push(and(gte(expenses.date, startDate), lte(expenses.date, endDate)));
     }
 
-    if (category) {
-      conditions.push(eq(expenses.category, category));
+    if (item) {
+      conditions.push(eq(expenses.item, item));
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -69,26 +60,12 @@ export async function POST(request: NextRequest) {
     // Store date as-is since it's already in YYYY-MM-DD format
     const date = validatedData.date;
 
-    // Auto-compute amount if qty and unitPrice are provided
-    let amount = validatedData.amount;
-    if (validatedData.qty && validatedData.unitPrice) {
-      amount = validatedData.qty * validatedData.unitPrice;
-    }
-
-    // Ensure amount is defined (should be guaranteed by the refine validation)
-    if (!amount) {
-      return NextResponse.json({ error: 'Amount is required' }, { status: 400 });
-    }
-
     const newExpense = await db.insert(expenses).values({
       date,
-      category: validatedData.category,
       item: validatedData.item,
       qty: validatedData.qty?.toString(),
       unit: validatedData.unit,
-      unitPrice: validatedData.unitPrice?.toString(),
-      amount: amount.toString(),
-      vendor: validatedData.vendor,
+      amount: validatedData.amount.toString(),
       notes: validatedData.notes,
     }).returning();
 
