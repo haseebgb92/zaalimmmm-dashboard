@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency } from '@/lib/date-utils';
 
 interface KeyItemData {
@@ -20,47 +20,27 @@ interface KeyItemsBreakdownProps {
   currency: string;
 }
 
-const KEY_ITEMS = [
-  'Chicken',
-  'Bread Small',
-  'Bread Medium', 
-  'Bread Large',
-  'Burgers', 
-  'Olives',
-  'Chips',
-  'Jalapeno',
-  'Cheese',
-  'Oil',
-  'Eggs'
-];
-
 export function KeyItemsBreakdown({ expensesByItem, currency }: KeyItemsBreakdownProps) {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(true);
   
-  // Filter and process key items
+  // Get all unique items from the expenses data
+  const allItems = Object.keys(expensesByItem).sort();
+  
+  // Filter and process selected items
   const keyItemsData: KeyItemData[] = [];
   
-  KEY_ITEMS.forEach(itemName => {
-    // Find exact matches for key items
-    const matchingItems = Object.entries(expensesByItem).filter(([item]) => 
-      item.toLowerCase() === itemName.toLowerCase()
-    );
-    
-    if (matchingItems.length > 0) {
-      const totalAmount = matchingItems.reduce((sum, [, data]) => sum + data.total, 0);
-      const totalQuantity = matchingItems.reduce((sum, [, data]) => sum + data.qty, 0);
-      const totalEntries = matchingItems.reduce((sum, [, data]) => sum + data.entries, 0);
-      
-      // Use the unit from the first matching item (they should be consistent)
-      const unit = matchingItems[0][1].unit || 'units';
-      
+  const itemsToProcess = showAll ? allItems : selectedItems;
+  
+  itemsToProcess.forEach(itemName => {
+    const itemData = expensesByItem[itemName];
+    if (itemData) {
       keyItemsData.push({
         item: itemName,
-        totalAmount,
-        totalQuantity,
-        unit,
-        entries: totalEntries
+        totalAmount: itemData.total,
+        totalQuantity: itemData.qty,
+        unit: itemData.unit,
+        entries: itemData.entries
       });
     }
   });
@@ -74,12 +54,14 @@ export function KeyItemsBreakdown({ expensesByItem, currency }: KeyItemsBreakdow
     return null;
   }
 
-  const handleItemToggle = (item: string) => {
-    if (selectedItems.includes(item)) {
-      setSelectedItems(selectedItems.filter(i => i !== item));
-    } else {
+  const handleAddItem = (item: string) => {
+    if (!selectedItems.includes(item)) {
       setSelectedItems([...selectedItems, item]);
     }
+  };
+
+  const handleRemoveItem = (item: string) => {
+    setSelectedItems(selectedItems.filter(i => i !== item));
   };
 
   const handleShowAll = () => {
@@ -100,42 +82,66 @@ export function KeyItemsBreakdown({ expensesByItem, currency }: KeyItemsBreakdow
         </p>
         
         {/* Filter Controls */}
-        <div className="flex flex-wrap gap-4 mt-4">
-          <div className="flex gap-2">
-            <Button 
-              variant={showAll ? "default" : "outline"} 
-              size="sm"
-              onClick={handleShowAll}
-            >
-              Show All
-            </Button>
-            <Button 
-              variant={!showAll ? "default" : "outline"} 
-              size="sm"
-              onClick={handleShowSelected}
-              disabled={selectedItems.length === 0}
-            >
-              Show Selected ({selectedItems.length})
-            </Button>
+        <div className="space-y-4 mt-4">
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex gap-2">
+              <Button 
+                variant={showAll ? "default" : "outline"} 
+                size="sm"
+                onClick={handleShowAll}
+              >
+                Show All Items
+              </Button>
+              <Button 
+                variant={!showAll ? "default" : "outline"} 
+                size="sm"
+                onClick={handleShowSelected}
+                disabled={selectedItems.length === 0}
+              >
+                Show Selected ({selectedItems.length})
+              </Button>
+            </div>
+            
+            {!showAll && (
+              <div className="flex items-center gap-2">
+                <Select onValueChange={handleAddItem}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Add item to view..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allItems
+                      .filter(item => !selectedItems.includes(item))
+                      .map((item) => (
+                        <SelectItem key={item} value={item}>
+                          {item}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           
-          <div className="flex flex-wrap gap-2">
-            {keyItemsData.map((item) => (
-              <div key={item.item} className="flex items-center space-x-2">
-                <Checkbox
-                  id={item.item}
-                  checked={selectedItems.includes(item.item)}
-                  onCheckedChange={() => handleItemToggle(item.item)}
-                />
-                <label 
-                  htmlFor={item.item} 
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          {/* Selected Items */}
+          {!showAll && selectedItems.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {selectedItems.map((item) => (
+                <Badge 
+                  key={item} 
+                  variant="secondary" 
+                  className="flex items-center gap-1 px-3 py-1"
                 >
-                  {item.item}
-                </label>
-              </div>
-            ))}
-          </div>
+                  {item}
+                  <button
+                    onClick={() => handleRemoveItem(item)}
+                    className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent>
