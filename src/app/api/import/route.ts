@@ -33,6 +33,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { type, data } = body;
 
+    console.log('Import request:', { type, dataLength: data?.length, firstRow: data?.[0] });
+
     if (!type || !data || !Array.isArray(data)) {
       return NextResponse.json({ error: 'Invalid request format' }, { status: 400 });
     }

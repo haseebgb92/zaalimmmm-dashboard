@@ -1,0 +1,3 @@
+date,category,item,vendor,qty,unit,unit_price,amount,notes
+2025-10-04,Ingredients,Chicken,Metro,25,kg,620.00,15500.00,"Fresh"
+2025-10-04,Bread,Bread Small,Bakery,60,packs,150.00,,"Auto compute"

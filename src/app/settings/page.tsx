@@ -103,8 +103,15 @@ export default function SettingsPage() {
         
         if (file.name.endsWith('.csv')) {
           // Parse CSV
-          const lines = content.split('\n');
+          const lines = content.split('\n').filter(line => line.trim());
+          if (lines.length < 2) {
+            toast.error('CSV file must have at least a header row and one data row');
+            return;
+          }
+          
           const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+          console.log('CSV Headers:', headers);
+          
           const data = [];
           
           for (let i = 1; i < lines.length; i++) {
@@ -113,7 +120,7 @@ export default function SettingsPage() {
               const row: Record<string, unknown> = {};
               
               headers.forEach((header, index) => {
-                const value = values[index];
+                const value = values[index] || '';
                 if (header === 'date') {
                   row[header] = value;
                 } else if (header === 'source') {
@@ -127,9 +134,12 @@ export default function SettingsPage() {
                 }
               });
               
+              console.log('Parsed row:', row);
               data.push(row);
             }
           }
+          
+          console.log('Total parsed data:', data);
           
           // Send to import API
           const response = await fetch('/api/import', {
@@ -141,7 +151,12 @@ export default function SettingsPage() {
           const result = await response.json();
           
           if (response.ok) {
-            toast.success(result.message);
+            if (result.results.errors.length > 0) {
+              toast.error(`Import completed with errors. ${result.results.success} records imported, ${result.results.errors.length} failed. Check console for details.`);
+              console.log('Import errors:', result.results.errors);
+            } else {
+              toast.success(result.message);
+            }
           } else {
             toast.error(result.error || 'Import failed');
           }
@@ -158,7 +173,12 @@ export default function SettingsPage() {
           const result = await response.json();
           
           if (response.ok) {
-            toast.success(result.message);
+            if (result.results.errors.length > 0) {
+              toast.error(`Import completed with errors. ${result.results.success} records imported, ${result.results.errors.length} failed. Check console for details.`);
+              console.log('Import errors:', result.results.errors);
+            } else {
+              toast.success(result.message);
+            }
           } else {
             toast.error(result.error || 'Import failed');
           }
