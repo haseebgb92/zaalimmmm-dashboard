@@ -1,7 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency } from '@/lib/date-utils';
 
 interface KeyItemData {
@@ -19,7 +22,9 @@ interface KeyItemsBreakdownProps {
 
 const KEY_ITEMS = [
   'Chicken',
-  'Bread',
+  'Bread Small',
+  'Bread Medium', 
+  'Bread Large',
   'Burgers', 
   'Olives',
   'Chips',
@@ -30,13 +35,16 @@ const KEY_ITEMS = [
 ];
 
 export function KeyItemsBreakdown({ expensesByItem, currency }: KeyItemsBreakdownProps) {
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [showAll, setShowAll] = useState(true);
+  
   // Filter and process key items
   const keyItemsData: KeyItemData[] = [];
   
   KEY_ITEMS.forEach(itemName => {
-    // Find all items that match this key item (case insensitive)
+    // Find exact matches for key items
     const matchingItems = Object.entries(expensesByItem).filter(([item]) => 
-      item.toLowerCase().includes(itemName.toLowerCase())
+      item.toLowerCase() === itemName.toLowerCase()
     );
     
     if (matchingItems.length > 0) {
@@ -57,9 +65,31 @@ export function KeyItemsBreakdown({ expensesByItem, currency }: KeyItemsBreakdow
     }
   });
 
+  // Filter displayed items based on selection
+  const displayedItems = showAll 
+    ? keyItemsData 
+    : keyItemsData.filter(item => selectedItems.includes(item.item));
+
   if (keyItemsData.length === 0) {
     return null;
   }
+
+  const handleItemToggle = (item: string) => {
+    if (selectedItems.includes(item)) {
+      setSelectedItems(selectedItems.filter(i => i !== item));
+    } else {
+      setSelectedItems([...selectedItems, item]);
+    }
+  };
+
+  const handleShowAll = () => {
+    setShowAll(true);
+    setSelectedItems([]);
+  };
+
+  const handleShowSelected = () => {
+    setShowAll(false);
+  };
 
   return (
     <Card className="lg:col-span-2">
@@ -68,10 +98,49 @@ export function KeyItemsBreakdown({ expensesByItem, currency }: KeyItemsBreakdow
         <p className="text-sm text-gray-600">
           Total amount spent and quantity purchased for key items
         </p>
+        
+        {/* Filter Controls */}
+        <div className="flex flex-wrap gap-4 mt-4">
+          <div className="flex gap-2">
+            <Button 
+              variant={showAll ? "default" : "outline"} 
+              size="sm"
+              onClick={handleShowAll}
+            >
+              Show All
+            </Button>
+            <Button 
+              variant={!showAll ? "default" : "outline"} 
+              size="sm"
+              onClick={handleShowSelected}
+              disabled={selectedItems.length === 0}
+            >
+              Show Selected ({selectedItems.length})
+            </Button>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {keyItemsData.map((item) => (
+              <div key={item.item} className="flex items-center space-x-2">
+                <Checkbox
+                  id={item.item}
+                  checked={selectedItems.includes(item.item)}
+                  onCheckedChange={() => handleItemToggle(item.item)}
+                />
+                <label 
+                  htmlFor={item.item} 
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {item.item}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {keyItemsData.map((item) => (
+          {displayedItems.map((item) => (
             <div key={item.item} className="border rounded-lg p-4 bg-gray-50">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-lg">{item.item}</h3>
@@ -106,9 +175,12 @@ export function KeyItemsBreakdown({ expensesByItem, currency }: KeyItemsBreakdow
           ))}
         </div>
         
-        {keyItemsData.length === 0 && (
+        {displayedItems.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            No key items found in the selected date range
+            {showAll 
+              ? "No key items found in the selected date range"
+              : "No items selected. Please select items to view their breakdown."
+            }
           </div>
         )}
       </CardContent>

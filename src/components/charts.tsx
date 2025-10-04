@@ -147,6 +147,12 @@ export function Charts({ dailySeries, expensesByItem, currency }: ChartsProps) {
         </CardContent>
       </Card>
 
+      {/* Key Items Breakdown */}
+      <KeyItemsBreakdown 
+        expensesByItem={expensesByItem}
+        currency={currency}
+      />
+
       {/* Expenses Doughnut Chart */}
       <Card className="lg:col-span-2">
         <CardHeader>
@@ -183,12 +189,6 @@ export function Charts({ dailySeries, expensesByItem, currency }: ChartsProps) {
           </div>
         </CardContent>
       </Card>
-
-      {/* Key Items Breakdown */}
-      <KeyItemsBreakdown 
-        expensesByItem={expensesByItem}
-        currency={currency}
-      />
     </div>
   );
 }
