@@ -202,9 +202,8 @@ export async function GET(request: NextRequest) {
 
     // Calculate sales trend for demand-based forecasting
     const currentPeriodSales = grossSalesTotal;
-    const avgDailySales = currentPeriodSales / daysDifference;
-    const salesGrowthRate = previousPeriodData ? 
-      ((currentPeriodSales - previousPeriodData.grossSalesTotal) / previousPeriodData.grossSalesTotal) * 100 : 0;
+    const salesGrowthRate = prevGrossSalesTotal > 0 ? 
+      ((currentPeriodSales - prevGrossSalesTotal) / prevGrossSalesTotal) * 100 : 0;
 
     Object.entries(expensesByItem).forEach(([item, data]) => {
       const currentAvgPerDay = data.total / daysDifference;
