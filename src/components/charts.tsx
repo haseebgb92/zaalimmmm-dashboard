@@ -190,13 +190,6 @@ export function Charts({ dailySeries, expensesByItem, expenseForecast, currency 
         </CardContent>
       </Card>
 
-      {/* Key Items Breakdown */}
-      <KeyItemsBreakdown 
-        expensesByItem={expensesByItem}
-        expenseForecast={expenseForecast}
-        currency={currency}
-      />
-
       {/* Expenses Bar Chart */}
       <Card className="lg:col-span-2">
         <CardHeader>
@@ -208,6 +201,13 @@ export function Charts({ dailySeries, expensesByItem, expenseForecast, currency 
           </div>
         </CardContent>
       </Card>
+
+      {/* Key Items Breakdown */}
+      <KeyItemsBreakdown 
+        expensesByItem={expensesByItem}
+        expenseForecast={expenseForecast}
+        currency={currency}
+      />
     </div>
   );
 }

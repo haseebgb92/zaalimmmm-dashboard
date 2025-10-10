@@ -23,10 +23,86 @@ export default function SettingsPage() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [autoBackupEnabled, setAutoBackupEnabled] = useState(false);
+  const [lastBackupDate, setLastBackupDate] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSettings();
+    fetchBackupStatus();
   }, []);
+
+  const fetchBackupStatus = async () => {
+    try {
+      const response = await fetch('/api/backup/schedule');
+      if (response.ok) {
+        const data = await response.json();
+        setAutoBackupEnabled(data.enabled);
+        setLastBackupDate(data.lastBackup);
+      }
+    } catch (error) {
+      console.error('Error fetching backup status:', error);
+    }
+  };
+
+  const handleEnableAutoBackup = async () => {
+    try {
+      const response = await fetch('/api/backup/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'enable' }),
+      });
+
+      if (response.ok) {
+        toast.success('Automatic backups enabled! Backups will be sent every 3 days.');
+        setAutoBackupEnabled(true);
+      } else {
+        toast.error('Failed to enable automatic backups');
+      }
+    } catch (error) {
+      console.error('Error enabling auto backup:', error);
+      toast.error('Error enabling automatic backups');
+    }
+  };
+
+  const handleDisableAutoBackup = async () => {
+    try {
+      const response = await fetch('/api/backup/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disable' }),
+      });
+
+      if (response.ok) {
+        toast.success('Automatic backups disabled.');
+        setAutoBackupEnabled(false);
+      } else {
+        toast.error('Failed to disable automatic backups');
+      }
+    } catch (error) {
+      console.error('Error disabling auto backup:', error);
+      toast.error('Error disabling automatic backups');
+    }
+  };
+
+  const handleTestBackup = async () => {
+    try {
+      const response = await fetch('/api/backup/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'test' }),
+      });
+
+      if (response.ok) {
+        toast.success('Test backup sent to haseeb.gbpk@gmail.com');
+        fetchBackupStatus(); // Refresh status
+      } else {
+        toast.error('Failed to send test backup');
+      }
+    } catch (error) {
+      console.error('Error sending test backup:', error);
+      toast.error('Error sending test backup');
+    }
+  };
 
   const fetchSettings = async () => {
     try {
@@ -399,7 +475,7 @@ export default function SettingsPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <h4 className="font-medium">Backup Data</h4>
+                  <h4 className="font-medium">Manual Backup</h4>
                   <p className="text-sm text-gray-500">
                     Download a complete backup of all your data (sales, expenses, settings)
                   </p>
@@ -422,6 +498,41 @@ export default function SettingsPage() {
                     className="w-full"
                   />
                 </div>
+              </div>
+              
+              {/* Automatic Backup Section */}
+              <div className="mt-6 pt-6 border-t">
+                <h4 className="font-medium mb-3">Automatic Email Backups</h4>
+                <p className="text-sm text-gray-500 mb-4">
+                  Automatic backups sent to haseeb.gbpk@gmail.com every 3 days
+                </p>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleEnableAutoBackup}
+                    disabled={autoBackupEnabled}
+                  >
+                    {autoBackupEnabled ? '✓ Enabled' : 'Enable Auto Backup'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleDisableAutoBackup}
+                    disabled={!autoBackupEnabled}
+                  >
+                    Disable
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleTestBackup}
+                  >
+                    Send Test Backup
+                  </Button>
+                </div>
+                {lastBackupDate && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Last backup: {new Date(lastBackupDate).toLocaleString()}
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
