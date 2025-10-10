@@ -86,8 +86,7 @@ export async function POST(request: NextRequest) {
             await db.insert(personalExpenses).values({
               id: pExpense.id,
               date: pExpense.date,
-              category: pExpense.category,
-              description: pExpense.description,
+              head: pExpense.head,
               amount: pExpense.amount,
               notes: pExpense.notes,
               createdAt: pExpense.createdAt ? new Date(pExpense.createdAt) : new Date(),

@@ -14,7 +14,7 @@ import {
   Legend,
   ArcElement,
 } from 'chart.js';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 import { formatCurrency, formatDate } from '@/lib/date-utils';
 
 ChartJS.register(
