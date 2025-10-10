@@ -201,10 +201,10 @@ export async function GET(request: NextRequest) {
       .where(and(gte(expenses.date, historicalStart), lt(expenses.date, start)));
 
     // Calculate sales trend for demand-based forecasting
-    const totalSales = grossSalesTotal;
-    const avgDailySales = totalSales / daysDifference;
+    const currentPeriodSales = grossSalesTotal;
+    const avgDailySales = currentPeriodSales / daysDifference;
     const salesGrowthRate = previousPeriodData ? 
-      ((totalSales - previousPeriodData.grossSalesTotal) / previousPeriodData.grossSalesTotal) * 100 : 0;
+      ((currentPeriodSales - previousPeriodData.grossSalesTotal) / previousPeriodData.grossSalesTotal) * 100 : 0;
 
     Object.entries(expensesByItem).forEach(([item, data]) => {
       const currentAvgPerDay = data.total / daysDifference;
