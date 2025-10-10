@@ -21,7 +21,6 @@ export const expenses = pgTable('expenses', {
   unit: text('unit'),
   amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
   notes: text('notes'),
-  receiptUrl: text('receipt_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
   dateIdx: index('expenses_date_idx').on(table.date),

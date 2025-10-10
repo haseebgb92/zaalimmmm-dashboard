@@ -19,7 +19,7 @@ interface ExpensesData {
   unit?: string;
   amount: string;
   notes?: string;
-  receiptUrl?: string;
+  // receiptUrl?: string; // Temporarily disabled
   createdAt: string;
 }
 
@@ -82,7 +82,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
       unit: item.unit || '',
       amount: item.amount,
       notes: item.notes || '',
-      receiptUrl: item.receiptUrl || '',
+      // receiptUrl: item.receiptUrl || '', // Temporarily disabled
     });
   };
 
@@ -98,7 +98,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
           unit: editForm.unit,
           amount: editForm.amount ? parseFloat(editForm.amount) : undefined,
           notes: editForm.notes,
-          receiptUrl: editForm.receiptUrl,
+          // receiptUrl: editForm.receiptUrl, // Temporarily disabled
         }),
       });
 
@@ -152,7 +152,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
           unit: addForm.unit,
           amount: addForm.amount ? parseFloat(addForm.amount) : undefined,
           notes: addForm.notes,
-          receiptUrl: addForm.receiptUrl,
+          // receiptUrl: addForm.receiptUrl, // Temporarily disabled
         }),
       });
 
@@ -166,7 +166,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
           unit: addForm.unit, // Keep last used unit
           amount: '',
           notes: '',
-          receiptUrl: '',
+          // receiptUrl: '', // Temporarily disabled
         });
         onRefresh();
       } else {
@@ -259,7 +259,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                   onChange={(e) => setAddForm({ ...addForm, notes: e.target.value })}
                 />
               </div>
-              <div>
+              {/* <div>
                 <label className="text-sm font-medium">Receipt URL (optional)</label>
                 <Input
                   type="url"
@@ -270,7 +270,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                 <p className="text-xs text-gray-500 mt-1">
                   Upload receipt to cloud storage and paste URL here
                 </p>
-              </div>
+              </div> */}
               <Button onClick={handleAdd} className="w-full">
                 Add Expense
               </Button>
@@ -311,7 +311,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                 <th className="text-left p-2">Qty/Unit</th>
                 <th className="text-left p-2">Amount</th>
                 <th className="text-left p-2">Notes</th>
-                <th className="text-left p-2">Receipt</th>
+                {/* <th className="text-left p-2">Receipt</th> */}
                 <th className="text-left p-2">Actions</th>
               </tr>
             </thead>
@@ -386,23 +386,9 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                       item.notes || '-'
                     )}
                   </td>
-                  <td className="p-2">
-                    {editingId === item.id ? (
-                      <Input
-                        type="url"
-                        placeholder="Receipt URL"
-                        value={editForm.receiptUrl}
-                        onChange={(e) => setEditForm({ ...editForm, receiptUrl: e.target.value })}
-                        className="w-32"
-                      />
-                    ) : item.receiptUrl ? (
-                      <a href={item.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
-                        View
-                      </a>
-                    ) : (
-                      '-'
-                    )}
-                  </td>
+                  {/* <td className="p-2">
+                    Receipt URL temporarily disabled
+                  </td> */}
                   <td className="p-2">
                     {editingId === item.id ? (
                       <div className="flex gap-2">
