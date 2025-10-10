@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { formatCurrency, formatDate, getTodayInKarachi } from '@/lib/date-utils';
 import { toast } from 'sonner';
+import { Calculator } from '@/components/calculator';
 
 interface ExpensesData {
   id: string;
@@ -214,12 +215,15 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
               </div>
               <div>
                 <label className="text-sm font-medium">Amount</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={addForm.amount}
-                  onChange={(e) => setAddForm({ ...addForm, amount: e.target.value })}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={addForm.amount}
+                    onChange={(e) => setAddForm({ ...addForm, amount: e.target.value })}
+                  />
+                  <Calculator onInsert={(value) => setAddForm({ ...addForm, amount: value })} />
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium">Notes</label>
@@ -314,12 +318,15 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                   </td>
                   <td className="p-2">
                     {editingId === item.id ? (
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={editForm.amount}
-                        onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
-                      />
+                      <div className="flex gap-1">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={editForm.amount}
+                          onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
+                        />
+                        <Calculator onInsert={(value) => setEditForm({ ...editForm, amount: value })} />
+                      </div>
                     ) : (
                       formatCurrency(parseFloat(item.amount), currency)
                     )}
