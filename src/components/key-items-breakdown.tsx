@@ -17,7 +17,13 @@ interface KeyItemData {
 
 interface KeyItemsBreakdownProps {
   expensesByItem: Record<string, { total: number; qty: number; unit: string; entries: number }>;
-  expenseForecast?: Record<string, { predictedAmount: number; avgPerDay: number }>;
+  expenseForecast?: Record<string, { 
+    predictedAmount: number; 
+    avgPerDay: number; 
+    confidence: string;
+    factors: string[];
+    trend: 'up' | 'down' | 'stable';
+  }>;
   currency: string;
 }
 
@@ -56,8 +62,15 @@ export function KeyItemsBreakdown({ expensesByItem, expenseForecast, currency }:
   }
 
   const handleAddItem = (item: string) => {
-    if (!selectedItems.includes(item)) {
+    if (item === 'clear-all') {
+      setSelectedItems([]);
+      setShowAll(true);
+    } else if (item === 'select-all') {
+      setSelectedItems(allItems);
+      setShowAll(false);
+    } else if (!selectedItems.includes(item)) {
       setSelectedItems([...selectedItems, item]);
+      setShowAll(false);
     }
   };
 
@@ -103,24 +116,26 @@ export function KeyItemsBreakdown({ expensesByItem, expenseForecast, currency }:
               </Button>
             </div>
             
-            {!showAll && (
-              <div className="flex items-center gap-2">
-                <Select onValueChange={handleAddItem}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Add item to view..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allItems
-                      .filter(item => !selectedItems.includes(item))
-                      .map((item) => (
-                        <SelectItem key={item} value={item}>
-                          {item}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            {/* Enhanced Filter Dropdown */}
+            <div className="flex items-center gap-2">
+              <Select onValueChange={handleAddItem}>
+                <SelectTrigger className="w-64">
+                  <SelectValue placeholder="🔍 Filter by specific items..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clear-all">Clear All Filters</SelectItem>
+                  <SelectItem value="select-all">Select All Items</SelectItem>
+                  <div className="border-t my-1"></div>
+                  {allItems
+                    .filter(item => !selectedItems.includes(item))
+                    .map((item) => (
+                      <SelectItem key={item} value={item}>
+                        {item}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
           {/* Selected Items */}
@@ -191,6 +206,46 @@ export function KeyItemsBreakdown({ expensesByItem, expenseForecast, currency }:
                       <span className="text-xs text-gray-600">
                         {formatCurrency(expenseForecast[item.item].avgPerDay, currency)}
                       </span>
+                    </div>
+                    
+                    {/* Enhanced Forecast Details */}
+                    <div className="mt-2 space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-gray-500">Confidence:</span>
+                        <span className={`text-xs font-medium ${
+                          expenseForecast[item.item].confidence === 'high' ? 'text-green-600' :
+                          expenseForecast[item.item].confidence === 'medium' ? 'text-yellow-600' :
+                          'text-red-600'
+                        }`}>
+                          {expenseForecast[item.item].confidence.toUpperCase()}
+                        </span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-gray-500">Trend:</span>
+                        <span className={`text-xs font-medium flex items-center gap-1 ${
+                          expenseForecast[item.item].trend === 'up' ? 'text-red-600' :
+                          expenseForecast[item.item].trend === 'down' ? 'text-green-600' :
+                          'text-gray-600'
+                        }`}>
+                          {expenseForecast[item.item].trend === 'up' ? '↗️' : 
+                           expenseForecast[item.item].trend === 'down' ? '↘️' : '→'}
+                          {expenseForecast[item.item].trend.toUpperCase()}
+                        </span>
+                      </div>
+                      
+                      {expenseForecast[item.item].factors.length > 0 && (
+                        <div className="mt-2">
+                          <span className="text-xs text-gray-500">Factors:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {expenseForecast[item.item].factors.map((factor, idx) => (
+                              <span key={idx} className="text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded">
+                                {factor}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

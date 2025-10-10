@@ -1,11 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { sales, expenses, settings } from '@/lib/db/schema';
-import { eq, and, gte, lte } from 'drizzle-orm';
+import { eq, and, gte, lte, lt } from 'drizzle-orm';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+
+// Seasonal multiplier function for expense forecasting
+function getSeasonalMultiplier(item: string, month: number): number {
+  const itemLower = item.toLowerCase();
+  
+  // Summer months (May-August) - higher demand for cold items
+  if (month >= 4 && month <= 7) {
+    if (itemLower.includes('chicken') || itemLower.includes('meat')) return 1.1;
+    if (itemLower.includes('vegetable') || itemLower.includes('salad')) return 1.2;
+    if (itemLower.includes('ice') || itemLower.includes('cold')) return 1.3;
+  }
+  
+  // Winter months (Nov-Feb) - higher demand for warm items
+  if (month >= 10 || month <= 1) {
+    if (itemLower.includes('chicken') || itemLower.includes('meat')) return 1.2;
+    if (itemLower.includes('bread') || itemLower.includes('warm')) return 1.1;
+  }
+  
+  // Ramadan/Eid periods (approximate)
+  if (month === 2 || month === 3) { // March-April
+    if (itemLower.includes('chicken') || itemLower.includes('meat')) return 1.4;
+    if (itemLower.includes('vegetable')) return 1.3;
+  }
+  
+  return 1.0; // No seasonal adjustment
+}
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -158,13 +184,72 @@ export async function GET(request: NextRequest) {
       return acc;
     }, {} as Record<string, { total: number; qty: number; unit: string; entries: number }>);
 
-    // Calculate expense forecast for next period
-    const expenseForecast: Record<string, { predictedAmount: number; avgPerDay: number }> = {};
+    // Enhanced expense forecast calculation
+    const expenseForecast: Record<string, { 
+      predictedAmount: number; 
+      avgPerDay: number; 
+      confidence: string;
+      factors: string[];
+      trend: 'up' | 'down' | 'stable';
+    }> = {};
+
+    // Get historical data for better forecasting (last 30 days)
+    const historicalStart = new Date(new Date(start).getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const historicalExpenses = await db
+      .select()
+      .from(expenses)
+      .where(and(gte(expenses.date, historicalStart), lt(expenses.date, start)));
+
+    // Calculate sales trend for demand-based forecasting
+    const totalSales = grossSalesTotal;
+    const avgDailySales = totalSales / daysDifference;
+    const salesGrowthRate = previousPeriodData ? 
+      ((totalSales - previousPeriodData.grossSalesTotal) / previousPeriodData.grossSalesTotal) * 100 : 0;
+
     Object.entries(expensesByItem).forEach(([item, data]) => {
-      const avgPerDay = data.total / daysDifference;
+      const currentAvgPerDay = data.total / daysDifference;
+      
+      // Historical analysis
+      const historicalItemData = historicalExpenses.filter(e => e.item === item);
+      const historicalAvgPerDay = historicalItemData.length > 0 ? 
+        historicalItemData.reduce((sum, e) => sum + parseFloat(e.amount), 0) / 30 : currentAvgPerDay;
+      
+      // Calculate trend
+      const trendChange = ((currentAvgPerDay - historicalAvgPerDay) / historicalAvgPerDay) * 100;
+      let trend: 'up' | 'down' | 'stable' = 'stable';
+      if (trendChange > 10) trend = 'up';
+      else if (trendChange < -10) trend = 'down';
+      
+      // Sales-based demand adjustment
+      const demandMultiplier = 1 + (salesGrowthRate / 100) * 0.3; // 30% correlation with sales growth
+      
+      // Seasonal adjustment (basic - can be enhanced)
+      const currentMonth = new Date(start).getMonth();
+      const seasonalMultiplier = getSeasonalMultiplier(item, currentMonth);
+      
+      // Final prediction with multiple factors
+      const basePrediction = currentAvgPerDay * daysDifference;
+      const adjustedPrediction = basePrediction * demandMultiplier * seasonalMultiplier;
+      
+      // Confidence calculation
+      let confidence = 'medium';
+      const dataPoints = data.entries;
+      if (dataPoints >= 7 && Math.abs(trendChange) < 20) confidence = 'high';
+      else if (dataPoints < 3 || Math.abs(trendChange) > 50) confidence = 'low';
+      
+      // Factors explanation
+      const factors: string[] = [];
+      if (Math.abs(salesGrowthRate) > 5) factors.push(`Sales ${salesGrowthRate > 0 ? 'growth' : 'decline'} (${salesGrowthRate.toFixed(1)}%)`);
+      if (Math.abs(trendChange) > 10) factors.push(`Spending ${trendChange > 0 ? 'increasing' : 'decreasing'} (${trendChange.toFixed(1)}%)`);
+      if (seasonalMultiplier !== 1) factors.push('Seasonal adjustment');
+      if (dataPoints < 5) factors.push('Limited data points');
+      
       expenseForecast[item] = {
-        predictedAmount: avgPerDay * daysDifference, // Predict same amount for next period
-        avgPerDay,
+        predictedAmount: Math.round(adjustedPrediction),
+        avgPerDay: Math.round(currentAvgPerDay * 100) / 100,
+        confidence,
+        factors,
+        trend,
       };
     });
 

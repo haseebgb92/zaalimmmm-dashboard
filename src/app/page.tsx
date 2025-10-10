@@ -44,7 +44,13 @@ interface SummaryData {
     expenses: number;
   }>;
   expensesByItem: Record<string, { total: number; qty: number; unit: string; entries: number }>;
-  expenseForecast: Record<string, { predictedAmount: number; avgPerDay: number }>;
+  expenseForecast: Record<string, { 
+    predictedAmount: number; 
+    avgPerDay: number; 
+    confidence: string;
+    factors: string[];
+    trend: 'up' | 'down' | 'stable';
+  }>;
 }
 
 export default function Dashboard() {
