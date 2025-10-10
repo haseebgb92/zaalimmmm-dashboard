@@ -17,10 +17,11 @@ interface KeyItemData {
 
 interface KeyItemsBreakdownProps {
   expensesByItem: Record<string, { total: number; qty: number; unit: string; entries: number }>;
+  expenseForecast?: Record<string, { predictedAmount: number; avgPerDay: number }>;
   currency: string;
 }
 
-export function KeyItemsBreakdown({ expensesByItem, currency }: KeyItemsBreakdownProps) {
+export function KeyItemsBreakdown({ expensesByItem, expenseForecast, currency }: KeyItemsBreakdownProps) {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(true);
   
@@ -174,6 +175,23 @@ export function KeyItemsBreakdown({ expensesByItem, currency }: KeyItemsBreakdow
                     <span className="font-semibold text-purple-600">
                       {formatCurrency(item.totalAmount / item.totalQuantity, currency)}/{item.unit}
                     </span>
+                  </div>
+                )}
+                
+                {expenseForecast && expenseForecast[item.item] && (
+                  <div className="mt-3 pt-3 border-t border-gray-300">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-500">Next Period Forecast:</span>
+                      <span className="text-sm font-semibold text-orange-600">
+                        {formatCurrency(expenseForecast[item.item].predictedAmount, currency)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mt-1">
+                      <span className="text-xs text-gray-500">Avg per Day:</span>
+                      <span className="text-xs text-gray-600">
+                        {formatCurrency(expenseForecast[item.item].avgPerDay, currency)}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>

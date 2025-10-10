@@ -15,10 +15,26 @@ interface SummaryData {
     grossSalesTotal: number;
     foodpandaProfitTotal: number;
     spotSalesTotal: number;
+    totalSales: number;
     ordersTotal: number;
     expensesTotal: number;
     netProfit: number;
     averageOrderValue: number;
+    profitMargin: number;
+    foodpandaCommission: number;
+  };
+  changes: {
+    grossSales: number;
+    foodpandaProfit: number;
+    spotSales: number;
+    totalSales: number;
+    orders: number;
+    expenses: number;
+    netProfit: number;
+  };
+  previousPeriod: {
+    start: string;
+    end: string;
   };
   dailySeries: Array<{
     date: string;
@@ -28,10 +44,11 @@ interface SummaryData {
     expenses: number;
   }>;
   expensesByItem: Record<string, { total: number; qty: number; unit: string; entries: number }>;
+  expenseForecast: Record<string, { predictedAmount: number; avgPerDay: number }>;
 }
 
 export default function Dashboard() {
-  const [dateRange, setDateRange] = useState<DateRange>(getDateRange('today'));
+  const [dateRange, setDateRange] = useState<DateRange>(getDateRange('thisWeek'));
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [currency, setCurrency] = useState('PKR');
@@ -147,13 +164,18 @@ export default function Dashboard() {
           <>
             {/* KPI Cards */}
             <div className="mb-8">
-              <KPICards kpis={summaryData.kpis} currency={currency} />
+              <KPICards 
+                kpis={summaryData.kpis} 
+                changes={summaryData.changes}
+                currency={currency} 
+              />
             </div>
 
             {/* Charts */}
             <Charts 
               dailySeries={summaryData.dailySeries} 
               expensesByItem={summaryData.expensesByItem}
+              expenseForecast={summaryData.expenseForecast}
               currency={currency}
             />
           </>

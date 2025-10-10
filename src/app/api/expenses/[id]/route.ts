@@ -17,6 +17,7 @@ const expensesUpdateSchema = z.object({
   unit: z.string().optional(),
   amount: z.number().positive().optional(),
   notes: z.string().optional(),
+  receiptUrl: z.string().url().optional().or(z.literal('')),
 });
 
 export async function PUT(

@@ -40,10 +40,11 @@ interface DailyData {
 interface ChartsProps {
   dailySeries: DailyData[];
   expensesByItem: Record<string, { total: number; qty: number; unit: string; entries: number }>;
+  expenseForecast?: Record<string, { predictedAmount: number; avgPerDay: number }>;
   currency: string;
 }
 
-export function Charts({ dailySeries, expensesByItem, currency }: ChartsProps) {
+export function Charts({ dailySeries, expensesByItem, expenseForecast, currency }: ChartsProps) {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -102,11 +103,16 @@ export function Charts({ dailySeries, expensesByItem, currency }: ChartsProps) {
     ],
   };
 
+  // Sort expenses by total amount (highest to lowest)
+  const sortedExpenses = Object.entries(expensesByItem)
+    .sort((a, b) => b[1].total - a[1].total);
+
   const expensesData = {
-    labels: Object.keys(expensesByItem),
+    labels: sortedExpenses.map(([item]) => item),
     datasets: [
       {
-        data: Object.values(expensesByItem).map(item => item.total),
+        label: 'Expense Amount',
+        data: sortedExpenses.map(([, data]) => data.total),
         backgroundColor: [
           'rgb(239, 68, 68)',
           'rgb(245, 158, 11)',
@@ -116,9 +122,46 @@ export function Charts({ dailySeries, expensesByItem, currency }: ChartsProps) {
           'rgb(236, 72, 153)',
           'rgb(6, 182, 212)',
           'rgb(132, 204, 22)',
+          'rgb(251, 146, 60)',
+          'rgb(168, 85, 247)',
         ],
       },
     ],
+  };
+
+  const expensesBarOptions = {
+    indexAxis: 'y' as const,
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          label: function(context: any) {
+            const itemName = context.label;
+            const itemData = expensesByItem[itemName];
+            const percentage = ((context.parsed.x / sortedExpenses.reduce((sum, [, data]) => sum + data.total, 0)) * 100).toFixed(1);
+            const qtyText = itemData?.qty > 0 ? ` | Qty: ${itemData.qty} ${itemData.unit || ''}` : '';
+            const entriesText = itemData?.entries > 1 ? ` | ${itemData.entries} entries` : '';
+            return `${itemName}: ${formatCurrency(context.parsed.x, currency)} (${percentage}%)${qtyText}${entriesText}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        ticks: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          callback: function(value: any) {
+            return formatCurrency(value, currency);
+          }
+        }
+      }
+    }
   };
 
   return (
@@ -150,42 +193,18 @@ export function Charts({ dailySeries, expensesByItem, currency }: ChartsProps) {
       {/* Key Items Breakdown */}
       <KeyItemsBreakdown 
         expensesByItem={expensesByItem}
+        expenseForecast={expenseForecast}
         currency={currency}
       />
 
-      {/* Expenses Doughnut Chart */}
+      {/* Expenses Bar Chart */}
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>Expenses by Item</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-64 flex items-center justify-center">
-            <div className="w-64 h-64">
-              <Doughnut 
-                data={expensesData} 
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: true,
-                  plugins: {
-                    legend: {
-                      position: 'bottom' as const,
-                    },
-                    tooltip: {
-                      callbacks: {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        label: function(context: any) {
-                          const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
-                          const percentage = ((context.parsed / total) * 100).toFixed(1);
-                          const itemData = expensesByItem[context.label];
-                          const qtyText = itemData.qty > 0 ? ` (Qty: ${itemData.qty})` : '';
-                          return `${context.label}: ${formatCurrency(context.parsed, currency)} (${percentage}%)${qtyText}`;
-                        }
-                      }
-                    }
-                  }
-                }} 
-              />
-            </div>
+          <div className="h-96">
+            <Bar data={expensesData} options={expensesBarOptions} />
           </div>
         </CardContent>
       </Card>

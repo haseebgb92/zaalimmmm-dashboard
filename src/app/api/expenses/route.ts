@@ -17,6 +17,7 @@ const expensesSchema = z.object({
   unit: z.string().optional(),
   amount: z.number().positive(),
   notes: z.string().optional(),
+  receiptUrl: z.string().url().optional().or(z.literal('')),
 });
 
 export async function GET(request: NextRequest) {
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
       unit: validatedData.unit,
       amount: validatedData.amount.toString(),
       notes: validatedData.notes,
+      receiptUrl: validatedData.receiptUrl || undefined,
     }).returning();
 
     return NextResponse.json(newExpense[0], { status: 201 });

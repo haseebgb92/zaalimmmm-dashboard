@@ -92,6 +92,68 @@ export default function SettingsPage() {
     document.body.removeChild(a);
   };
 
+  const handleBackup = async () => {
+    try {
+      const response = await fetch('/api/backup');
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const filename = `zaalimmmm-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success('Backup downloaded successfully');
+      } else {
+        toast.error('Failed to create backup');
+      }
+    } catch (error) {
+      console.error('Backup error:', error);
+      toast.error('Error creating backup');
+    }
+  };
+
+  const handleRestore = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!confirm('This will restore data from the backup file. Duplicate records will be skipped. Continue?')) {
+      event.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const content = e.target?.result as string;
+        const backupData = JSON.parse(content);
+
+        const response = await fetch('/api/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(backupData),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          toast.success(`${result.message} (Sales: ${result.results.sales.success}, Expenses: ${result.results.expenses.success}, Personal: ${result.results.personalExpenses.success})`);
+        } else {
+          toast.error(result.error || 'Restore failed');
+        }
+      } catch (error) {
+        console.error('Restore error:', error);
+        toast.error('Failed to restore backup. Please check the file format.');
+      } finally {
+        event.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'sales' | 'expenses') => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -339,9 +401,9 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <h4 className="font-medium">Backup Data</h4>
                   <p className="text-sm text-gray-500">
-                    Download a complete backup of all your data
+                    Download a complete backup of all your data (sales, expenses, settings)
                   </p>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" onClick={handleBackup}>
                     <Download className="h-4 w-4 mr-2" />
                     Download Backup
                   </Button>
@@ -349,11 +411,14 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <h4 className="font-medium">Restore Data</h4>
                   <p className="text-sm text-gray-500">
-                    Upload a backup file to restore your data
+                    Upload a backup file to restore your data (skips duplicates)
                   </p>
+                  <Label htmlFor="restore-file" className="sr-only">Restore Backup</Label>
                   <Input
+                    id="restore-file"
                     type="file"
                     accept=".json"
+                    onChange={handleRestore}
                     className="w-full"
                   />
                 </div>

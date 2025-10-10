@@ -52,6 +52,46 @@ export async function GET(request: NextRequest) {
     const expensesTotal = expensesData.reduce((sum, e) => sum + parseFloat(e.amount), 0);
     const netProfit = spotSalesTotal + foodpandaProfitTotal - expensesTotal;
     const averageOrderValue = ordersTotal > 0 ? grossSalesTotal / ordersTotal : 0;
+    const totalSales = foodpandaProfitTotal + spotSalesTotal;
+    const profitMargin = totalSales > 0 ? (netProfit / totalSales) * 100 : 0;
+    const foodpandaCommission = foodpandaSales.reduce((sum, s) => sum + (parseFloat(s.grossAmount) * (1 - fpProfitRate)), 0);
+
+    // Calculate previous period data for comparison
+    const daysDifference = dayjs(end).diff(dayjs(start), 'day') + 1;
+    const prevStart = dayjs(start).subtract(daysDifference, 'day').format('YYYY-MM-DD');
+    const prevEnd = dayjs(start).subtract(1, 'day').format('YYYY-MM-DD');
+
+    const prevSalesData = await db
+      .select()
+      .from(sales)
+      .where(and(gte(sales.date, prevStart), lte(sales.date, prevEnd)));
+
+    const prevExpensesData = await db
+      .select()
+      .from(expenses)
+      .where(and(gte(expenses.date, prevStart), lte(expenses.date, prevEnd)));
+
+    const prevSpotSales = prevSalesData.filter(s => s.source === 'spot');
+    const prevFoodpandaSales = prevSalesData.filter(s => s.source === 'foodpanda');
+    
+    const prevGrossSalesTotal = prevSalesData.reduce((sum, s) => sum + parseFloat(s.grossAmount), 0);
+    const prevFoodpandaProfitTotal = prevFoodpandaSales.reduce((sum, s) => sum + (parseFloat(s.grossAmount) * fpProfitRate), 0);
+    const prevSpotSalesTotal = prevSpotSales.reduce((sum, s) => sum + parseFloat(s.grossAmount), 0);
+    const prevOrdersTotal = prevSalesData.reduce((sum, s) => sum + s.orders, 0);
+    const prevExpensesTotal = prevExpensesData.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+    const prevNetProfit = prevSpotSalesTotal + prevFoodpandaProfitTotal - prevExpensesTotal;
+    const prevTotalSales = prevFoodpandaProfitTotal + prevSpotSalesTotal;
+
+    // Calculate percentage changes
+    const changes = {
+      grossSales: prevGrossSalesTotal > 0 ? ((grossSalesTotal - prevGrossSalesTotal) / prevGrossSalesTotal) * 100 : 0,
+      foodpandaProfit: prevFoodpandaProfitTotal > 0 ? ((foodpandaProfitTotal - prevFoodpandaProfitTotal) / prevFoodpandaProfitTotal) * 100 : 0,
+      spotSales: prevSpotSalesTotal > 0 ? ((spotSalesTotal - prevSpotSalesTotal) / prevSpotSalesTotal) * 100 : 0,
+      totalSales: prevTotalSales > 0 ? ((totalSales - prevTotalSales) / prevTotalSales) * 100 : 0,
+      orders: prevOrdersTotal > 0 ? ((ordersTotal - prevOrdersTotal) / prevOrdersTotal) * 100 : 0,
+      expenses: prevExpensesTotal > 0 ? ((expensesTotal - prevExpensesTotal) / prevExpensesTotal) * 100 : 0,
+      netProfit: prevNetProfit !== 0 ? ((netProfit - prevNetProfit) / Math.abs(prevNetProfit)) * 100 : 0,
+    };
 
     // Daily series for charts
     const dailyData = new Map();
@@ -118,18 +158,37 @@ export async function GET(request: NextRequest) {
       return acc;
     }, {} as Record<string, { total: number; qty: number; unit: string; entries: number }>);
 
+    // Calculate expense forecast for next period
+    const expenseForecast: Record<string, { predictedAmount: number; avgPerDay: number }> = {};
+    Object.entries(expensesByItem).forEach(([item, data]) => {
+      const avgPerDay = data.total / daysDifference;
+      expenseForecast[item] = {
+        predictedAmount: avgPerDay * daysDifference, // Predict same amount for next period
+        avgPerDay,
+      };
+    });
+
     return NextResponse.json({
       kpis: {
         grossSalesTotal,
         foodpandaProfitTotal,
         spotSalesTotal,
+        totalSales,
         ordersTotal,
         expensesTotal,
         netProfit,
         averageOrderValue,
+        profitMargin,
+        foodpandaCommission,
+      },
+      changes,
+      previousPeriod: {
+        start: prevStart,
+        end: prevEnd,
       },
       dailySeries: Array.from(dailyData.values()),
       expensesByItem,
+      expenseForecast,
     });
   } catch (error) {
     console.error('Error fetching summary:', error);

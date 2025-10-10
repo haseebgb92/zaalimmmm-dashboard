@@ -31,9 +31,23 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<SalesData>>({});
   const [filterText, setFilterText] = useState('');
+  
+  // Load last used values from localStorage
+  const getLastUsedValues = () => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('lastSaleValues');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    }
+    return {
+      source: 'spot' as 'spot' | 'foodpanda',
+    };
+  };
+
   const [addForm, setAddForm] = useState({
     date: getTodayInKarachi(),
-    source: 'spot' as 'spot' | 'foodpanda',
+    ...getLastUsedValues(),
     orders: 0,
     grossAmount: '',
     notes: '',
@@ -107,6 +121,13 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
 
   const handleAdd = async () => {
     try {
+      // Save last used values to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('lastSaleValues', JSON.stringify({
+          source: addForm.source,
+        }));
+      }
+
       const response = await fetch('/api/sales', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -124,7 +145,7 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
         setIsAddDialogOpen(false);
         setAddForm({
           date: getTodayInKarachi(),
-          source: 'spot',
+          source: addForm.source, // Keep last used source
           orders: 0,
           grossAmount: '',
           notes: '',
@@ -214,6 +235,11 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
         </div>
       </CardHeader>
       <CardContent>
+        {filterText && (
+          <div className="mb-4 text-sm text-gray-600">
+            Showing {filteredData.length} of {data.length} entries
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>

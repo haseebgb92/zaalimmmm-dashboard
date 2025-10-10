@@ -19,6 +19,7 @@ interface ExpensesData {
   unit?: string;
   amount: string;
   notes?: string;
+  receiptUrl?: string;
   createdAt: string;
 }
 
@@ -38,13 +39,28 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<ExpensesData>>({});
   const [filterText, setFilterText] = useState('');
+  
+  // Load last used values from localStorage
+  const getLastUsedValues = () => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('lastExpenseValues');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    }
+    return {
+      unit: '',
+    };
+  };
+
   const [addForm, setAddForm] = useState({
     date: getTodayInKarachi(),
     item: '',
     qty: '',
-    unit: '',
+    ...getLastUsedValues(),
     amount: '',
     notes: '',
+    receiptUrl: '',
   });
 
   // Filter data based on item name or notes
@@ -66,6 +82,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
       unit: item.unit || '',
       amount: item.amount,
       notes: item.notes || '',
+      receiptUrl: item.receiptUrl || '',
     });
   };
 
@@ -81,6 +98,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
           unit: editForm.unit,
           amount: editForm.amount ? parseFloat(editForm.amount) : undefined,
           notes: editForm.notes,
+          receiptUrl: editForm.receiptUrl,
         }),
       });
 
@@ -117,6 +135,13 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
 
   const handleAdd = async () => {
     try {
+      // Save last used values to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('lastExpenseValues', JSON.stringify({
+          unit: addForm.unit,
+        }));
+      }
+
       const response = await fetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -127,6 +152,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
           unit: addForm.unit,
           amount: addForm.amount ? parseFloat(addForm.amount) : undefined,
           notes: addForm.notes,
+          receiptUrl: addForm.receiptUrl,
         }),
       });
 
@@ -137,9 +163,10 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
           date: getTodayInKarachi(),
           item: '',
           qty: '',
-          unit: '',
+          unit: addForm.unit, // Keep last used unit
           amount: '',
           notes: '',
+          receiptUrl: '',
         });
         onRefresh();
       } else {
@@ -232,6 +259,18 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                   onChange={(e) => setAddForm({ ...addForm, notes: e.target.value })}
                 />
               </div>
+              <div>
+                <label className="text-sm font-medium">Receipt URL (optional)</label>
+                <Input
+                  type="url"
+                  placeholder="https://example.com/receipt.jpg"
+                  value={addForm.receiptUrl}
+                  onChange={(e) => setAddForm({ ...addForm, receiptUrl: e.target.value })}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload receipt to cloud storage and paste URL here
+                </p>
+              </div>
               <Button onClick={handleAdd} className="w-full">
                 Add Expense
               </Button>
@@ -241,6 +280,11 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
         </div>
       </CardHeader>
       <CardContent>
+        {filterText && (
+          <div className="mb-4 text-sm text-gray-600">
+            Showing {filteredData.length} of {data.length} entries
+          </div>
+        )}
         {/* Quick Add Presets */}
         <div className="mb-4">
           <h4 className="text-sm font-medium mb-2">Quick Add Presets</h4>
@@ -267,6 +311,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                 <th className="text-left p-2">Qty/Unit</th>
                 <th className="text-left p-2">Amount</th>
                 <th className="text-left p-2">Notes</th>
+                <th className="text-left p-2">Receipt</th>
                 <th className="text-left p-2">Actions</th>
               </tr>
             </thead>
@@ -339,6 +384,23 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                       />
                     ) : (
                       item.notes || '-'
+                    )}
+                  </td>
+                  <td className="p-2">
+                    {editingId === item.id ? (
+                      <Input
+                        type="url"
+                        placeholder="Receipt URL"
+                        value={editForm.receiptUrl}
+                        onChange={(e) => setEditForm({ ...editForm, receiptUrl: e.target.value })}
+                        className="w-32"
+                      />
+                    ) : item.receiptUrl ? (
+                      <a href={item.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
+                        View
+                      </a>
+                    ) : (
+                      '-'
                     )}
                   </td>
                   <td className="p-2">
