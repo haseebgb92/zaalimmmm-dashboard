@@ -30,12 +30,23 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<SalesData>>({});
+  const [filterText, setFilterText] = useState('');
   const [addForm, setAddForm] = useState({
     date: getTodayInKarachi(),
     source: 'spot' as 'spot' | 'foodpanda',
     orders: 0,
     grossAmount: '',
     notes: '',
+  });
+
+  // Filter data based on source or notes
+  const filteredData = data.filter((item) => {
+    if (!filterText) return true;
+    const searchText = filterText.toLowerCase();
+    return (
+      item.source.toLowerCase().includes(searchText) ||
+      (item.notes && item.notes.toLowerCase().includes(searchText))
+    );
   });
 
   const handleEdit = (item: SalesData) => {
@@ -131,7 +142,14 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Sales Log</CardTitle>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <div className="flex gap-2">
+          <Input
+            placeholder="Filter by source or notes..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            className="max-w-xs"
+          />
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -193,6 +211,7 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -208,7 +227,7 @@ export function SalesTable({ data, onRefresh, currency }: SalesTableProps) {
               </tr>
             </thead>
             <tbody>
-              {data.map((item) => (
+              {filteredData.map((item) => (
                 <tr key={item.id} className="border-b">
                   <td className="p-2">
                     {editingId === item.id ? (

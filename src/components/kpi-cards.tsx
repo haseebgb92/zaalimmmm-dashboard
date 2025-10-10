@@ -18,6 +18,9 @@ interface KPICardsProps {
 }
 
 export function KPICards({ kpis, currency }: KPICardsProps) {
+  // Calculate Total Sales (Foodpanda Profit + Spot Sales Total)
+  const totalSales = kpis.foodpandaProfitTotal + kpis.spotSalesTotal;
+
   const cards = [
     {
       title: 'Gross Sales Total',
@@ -38,10 +41,10 @@ export function KPICards({ kpis, currency }: KPICardsProps) {
       description: 'Direct sales revenue',
     },
     {
-      title: 'Orders Total',
-      value: kpis.ordersTotal.toLocaleString(),
-      icon: Receipt,
-      description: 'Total number of orders',
+      title: 'Total Sales',
+      value: formatCurrency(totalSales, currency),
+      icon: DollarSign,
+      description: 'Combined profit from all sales',
     },
     {
       title: 'Expenses Total',
@@ -55,6 +58,12 @@ export function KPICards({ kpis, currency }: KPICardsProps) {
       icon: Calculator,
       description: 'Total profit after expenses',
       isProfit: true,
+    },
+    {
+      title: 'Orders Total',
+      value: kpis.ordersTotal.toLocaleString(),
+      icon: Receipt,
+      description: 'Total number of orders',
     },
     {
       title: 'Average Order Value',

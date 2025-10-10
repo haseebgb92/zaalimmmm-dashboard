@@ -36,6 +36,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<ExpensesData>>({});
+  const [filterText, setFilterText] = useState('');
   const [addForm, setAddForm] = useState({
     date: getTodayInKarachi(),
     item: '',
@@ -43,6 +44,16 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
     unit: '',
     amount: '',
     notes: '',
+  });
+
+  // Filter data based on item name or notes
+  const filteredData = data.filter((item) => {
+    if (!filterText) return true;
+    const searchText = filterText.toLowerCase();
+    return (
+      item.item.toLowerCase().includes(searchText) ||
+      (item.notes && item.notes.toLowerCase().includes(searchText))
+    );
   });
 
   const handleEdit = (item: ExpensesData) => {
@@ -147,7 +158,14 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Expenses Log</CardTitle>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <div className="flex gap-2">
+          <Input
+            placeholder="Filter by item or notes..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            className="max-w-xs"
+          />
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -216,6 +234,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </CardHeader>
       <CardContent>
         {/* Quick Add Presets */}
@@ -248,7 +267,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
               </tr>
             </thead>
             <tbody>
-              {data.map((item) => (
+              {filteredData.map((item) => (
                 <tr key={item.id} className="border-b">
                   <td className="p-2">
                     {editingId === item.id ? (
