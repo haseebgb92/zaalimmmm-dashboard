@@ -285,7 +285,8 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                   onChange={(e) => setAddForm({ ...addForm, notes: e.target.value })}
                 />
               </div>
-              <div>
+              {/* Temporarily disabled until database migration is applied */}
+              {/* <div>
                 <label className="text-sm font-medium">Receipt (optional)</label>
                 <ReceiptPicker
                   onReceiptSelect={(file) => setAddReceiptFile(file)}
@@ -295,7 +296,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                     setAddForm({ ...addForm, receiptUrl: '' });
                   }}
                 />
-              </div>
+              </div> */}
               <Button onClick={handleAdd} className="w-full">
                 Add Expense
               </Button>
@@ -336,7 +337,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                 <th className="text-left p-2">Qty/Unit</th>
                 <th className="text-left p-2">Amount</th>
                 <th className="text-left p-2">Notes</th>
-                <th className="text-left p-2">Receipt</th>
+                {/* <th className="text-left p-2">Receipt</th> */}
                 <th className="text-left p-2">Actions</th>
               </tr>
             </thead>
@@ -411,7 +412,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                       item.notes || '-'
                     )}
                   </td>
-                  <td className="p-2">
+                  {/* <td className="p-2">
                     {editingId === item.id ? (
                       <ReceiptPicker
                         onReceiptSelect={(file) => setEditReceiptFile(file)}
@@ -433,7 +434,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                         '-'
                       )
                     )}
-                  </td>
+                  </td> */}
                   <td className="p-2">
                     {editingId === item.id ? (
                       <div className="flex gap-2">

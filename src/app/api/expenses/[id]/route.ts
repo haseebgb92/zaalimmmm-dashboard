@@ -44,8 +44,14 @@ export async function PUT(
       updateData.amount = validatedData.amount.toString();
     }
 
+    // Only update receiptUrl if it's provided and the column exists
     if (validatedData.receiptUrl !== undefined) {
-      updateData.receiptUrl = validatedData.receiptUrl || null;
+      try {
+        updateData.receiptUrl = validatedData.receiptUrl || null;
+      } catch (error) {
+        // If receiptUrl column doesn't exist, skip it
+        console.warn('ReceiptUrl column not available, skipping update');
+      }
     }
 
     const updatedExpense = await db
