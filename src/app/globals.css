@@ -120,3 +120,37 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Mobile PWA optimizations */
+@media (max-width: 768px) {
+  body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  /* Prevent zoom on input focus */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+  
+  /* Better touch targets */
+  button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* PWA specific styles */
+@media (display-mode: standalone) {
+  body {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  /* Hide browser UI elements */
+  .pwa-hidden {
+    display: none !important;
+  }
+}
