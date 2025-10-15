@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { PersonalExpensesTable } from '@/components/personal-expenses-table';
+import { MobileNav } from '@/components/mobile-nav';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, FileText, Settings } from 'lucide-react';
 import Link from 'next/link';
@@ -31,11 +32,14 @@ export default function PersonalExpensesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Mobile Navigation */}
+      <MobileNav />
+      
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div className="flex items-center gap-4">
-            <Link href="/">
+            <Link href="/" className="hidden md:block">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Dashboard
@@ -48,7 +52,8 @@ export default function PersonalExpensesPage() {
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          {/* Desktop Navigation - Hidden on Mobile */}
+          <div className="hidden md:flex gap-2">
             <Link href="/logs">
               <Button variant="outline" size="sm">
                 <FileText className="h-4 w-4 mr-2" />

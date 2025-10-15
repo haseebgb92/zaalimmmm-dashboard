@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { MobileNav } from '@/components/mobile-nav';
 import { ArrowLeft, Download, Save } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -356,10 +357,13 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Mobile Navigation */}
+      <MobileNav />
+      
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Link href="/">
+          <Link href="/" className="hidden md:block">
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard

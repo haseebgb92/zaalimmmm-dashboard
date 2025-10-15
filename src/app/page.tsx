@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/date-range-picker';
 import { KPICards } from '@/components/kpi-cards';
 import { Charts } from '@/components/charts';
+import { MobileNav } from '@/components/mobile-nav';
 import { DateRange, getDateRange } from '@/lib/date-utils';
 import { Download, Settings, FileText, User } from 'lucide-react';
 import Link from 'next/link';
@@ -119,6 +120,9 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Mobile Navigation */}
+      <MobileNav onExport={handleExport} />
+      
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -126,7 +130,8 @@ export default function Dashboard() {
             <h1 className="text-3xl font-bold text-gray-900">Zaalimmmm Shawarma</h1>
             <p className="text-gray-600">Analytics Dashboard</p>
           </div>
-          <div className="flex gap-2">
+          {/* Desktop Navigation - Hidden on Mobile */}
+          <div className="hidden md:flex gap-2">
             <Button variant="outline" onClick={handleExport}>
               <Download className="h-4 w-4 mr-2" />
               Export
