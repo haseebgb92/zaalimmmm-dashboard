@@ -10,7 +10,7 @@ import { Edit, Trash2, Plus } from 'lucide-react';
 import { formatCurrency, formatDate, getTodayInKarachi } from '@/lib/date-utils';
 import { toast } from 'sonner';
 import { Calculator } from '@/components/calculator';
-import { ReceiptPicker } from '@/components/receipt-picker';
+// import { ReceiptPicker } from '@/components/receipt-picker';
 
 interface ExpensesData {
   id: string;
@@ -40,8 +40,8 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<ExpensesData>>({});
   const [filterText, setFilterText] = useState('');
-  const [addReceiptFile, setAddReceiptFile] = useState<File | null>(null);
-  const [editReceiptFile, setEditReceiptFile] = useState<File | null>(null);
+  // const [addReceiptFile, setAddReceiptFile] = useState<File | null>(null);
+  // const [editReceiptFile, setEditReceiptFile] = useState<File | null>(null);
   
   // Load last used values from localStorage
   const getLastUsedValues = () => {
@@ -56,15 +56,15 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
     };
   };
 
-  // Convert file to base64 URL
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
-  };
+  // Convert file to base64 URL (temporarily disabled)
+  // const fileToBase64 = (file: File): Promise<string> => {
+  //   return new Promise((resolve, reject) => {
+  //     const reader = new FileReader();
+  //     reader.readAsDataURL(file);
+  //     reader.onload = () => resolve(reader.result as string);
+  //     reader.onerror = error => reject(error);
+  //   });
+  // };
 
   const [addForm, setAddForm] = useState({
     date: getTodayInKarachi(),
@@ -97,16 +97,16 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
       notes: item.notes || '',
       receiptUrl: item.receiptUrl || '',
     });
-    setEditReceiptFile(null); // Reset receipt file
+    // setEditReceiptFile(null); // Reset receipt file
   };
 
   const handleSave = async () => {
     try {
       // Convert receipt file to base64 if present
-      let receiptUrl = editForm.receiptUrl;
-      if (editReceiptFile) {
-        receiptUrl = await fileToBase64(editReceiptFile);
-      }
+      const receiptUrl = editForm.receiptUrl;
+      // if (editReceiptFile) {
+      //   receiptUrl = await fileToBase64(editReceiptFile);
+      // }
 
       const response = await fetch(`/api/expenses/${editingId}`, {
         method: 'PUT',
@@ -163,10 +163,10 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
       }
 
       // Convert receipt file to base64 if present
-      let receiptUrl = addForm.receiptUrl;
-      if (addReceiptFile) {
-        receiptUrl = await fileToBase64(addReceiptFile);
-      }
+      const receiptUrl = addForm.receiptUrl;
+      // if (addReceiptFile) {
+      //   receiptUrl = await fileToBase64(addReceiptFile);
+      // }
 
       const response = await fetch('/api/expenses', {
         method: 'POST',

@@ -48,7 +48,7 @@ export async function PUT(
     if (validatedData.receiptUrl !== undefined) {
       try {
         updateData.receiptUrl = validatedData.receiptUrl || null;
-      } catch (error) {
+      } catch {
         // If receiptUrl column doesn't exist, skip it
         console.warn('ReceiptUrl column not available, skipping update');
       }

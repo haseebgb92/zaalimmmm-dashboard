@@ -61,19 +61,15 @@ export async function POST(request: NextRequest) {
     // Store date as-is since it's already in YYYY-MM-DD format
     const date = validatedData.date;
 
-    const insertData: any = {
+    const insertData = {
       date,
       item: validatedData.item,
       qty: validatedData.qty?.toString(),
       unit: validatedData.unit,
       amount: validatedData.amount.toString(),
       notes: validatedData.notes,
+      ...(validatedData.receiptUrl && { receiptUrl: validatedData.receiptUrl }),
     };
-    
-    // Only add receiptUrl if it's provided
-    if (validatedData.receiptUrl) {
-      insertData.receiptUrl = validatedData.receiptUrl;
-    }
 
     const newExpense = await db.insert(expenses).values(insertData).returning();
 
