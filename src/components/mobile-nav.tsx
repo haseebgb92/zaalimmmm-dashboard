@@ -64,7 +64,7 @@ export function MobileNav({ onExport }: MobileNavProps) {
     <>
       {/* Floating Hamburger Button */}
       <div 
-        className={`fixed top-20 left-4 z-50 md:hidden transition-all duration-300 ease-in-out ${
+        className={`fixed top-20 right-4 z-50 md:hidden transition-all duration-300 ease-in-out ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-[-100px] opacity-0'
         }`}
       >
@@ -94,7 +94,7 @@ export function MobileNav({ onExport }: MobileNavProps) {
           />
           
           {/* Menu Panel */}
-          <div className="absolute top-0 left-0 h-full w-80 max-w-[85vw] bg-background border-r border-border shadow-xl">
+          <div className="absolute top-0 right-0 h-full w-80 max-w-[85vw] bg-background border-l border-border shadow-xl animate-in slide-in-from-right duration-300">
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="flex items-center justify-between p-6 pt-8 border-b border-border">
