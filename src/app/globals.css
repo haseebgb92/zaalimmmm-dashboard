@@ -140,6 +140,12 @@
     min-height: 44px;
     min-width: 44px;
   }
+  
+  /* Mobile hamburger button spacing */
+  .mobile-nav-button {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
 }
 
 /* PWA specific styles */
