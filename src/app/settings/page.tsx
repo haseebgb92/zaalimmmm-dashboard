@@ -105,6 +105,28 @@ export default function SettingsPage() {
     }
   };
 
+  const testPOSIntegration = async (testType: string) => {
+    try {
+      const response = await fetch('/api/pos/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ testType }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success(`${result.description} completed successfully!`);
+        console.log('POS Test Result:', result);
+      } else {
+        toast.error(result.error || 'POS test failed');
+      }
+    } catch (error) {
+      console.error('POS test error:', error);
+      toast.error('Failed to test POS integration');
+    }
+  };
+
   const fetchSettings = async () => {
     try {
       const response = await fetch('/api/settings');
@@ -537,6 +559,98 @@ export default function SettingsPage() {
                     Last backup: {new Date(lastBackupDate).toLocaleString()}
                   </p>
                 )}
+              </div>
+              
+              {/* POS Integration Section */}
+              <div className="mt-6 pt-6 border-t">
+                <h4 className="font-medium mb-3">POS Integration</h4>
+                <p className="text-sm text-gray-500 mb-4">
+                  Connect your POS system to automatically record daily sales
+                </p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">API Endpoint</label>
+                    <div className="mt-1 p-3 bg-gray-50 rounded border font-mono text-sm">
+                      {typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.vercel.app'}/api/pos/sales
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Send POST requests to this endpoint from your POS system
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium">Webhook Endpoint</label>
+                    <div className="mt-1 p-3 bg-gray-50 rounded border font-mono text-sm">
+                      {typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.vercel.app'}/api/pos/webhook
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      For real-time order updates and daily summaries
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium">Business Hours</label>
+                    <div className="mt-1 p-3 bg-blue-50 rounded border">
+                      <p className="text-sm font-medium text-blue-800">2:00 PM - 2:00 AM (Pakistan Time)</p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        Orders between 2 AM - 2 PM belong to previous business day
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium">Sample API Request</label>
+                    <div className="mt-1 p-3 bg-gray-50 rounded border">
+                      <pre className="text-xs overflow-x-auto">
+{`{
+  "source": "spot",
+  "orders": 1,
+  "grossAmount": 250.00,
+  "timestamp": "2024-01-15T20:30:00+05:00",
+  "notes": "Order #12345"
+}`}
+                      </pre>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium">Test POS Integration</label>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => testPOSIntegration('single_order')}
+                      >
+                        Test Single Order
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => testPOSIntegration('multiple_orders')}
+                      >
+                        Test Multiple Orders
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => testPOSIntegration('late_night_order')}
+                      >
+                        Test Late Night (1:30 AM)
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => testPOSIntegration('early_morning_order')}
+                      >
+                        Test Early Morning (8:00 AM)
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      These tests will create sample sales data to verify the integration works correctly
+                    </p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
