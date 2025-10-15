@@ -10,6 +10,7 @@ import { Edit, Trash2, Plus } from 'lucide-react';
 import { formatCurrency, formatDate, getTodayInKarachi } from '@/lib/date-utils';
 import { toast } from 'sonner';
 import { Calculator } from '@/components/calculator';
+import { ReceiptPicker } from '@/components/receipt-picker';
 
 interface ExpensesData {
   id: string;
@@ -19,7 +20,7 @@ interface ExpensesData {
   unit?: string;
   amount: string;
   notes?: string;
-  // receiptUrl?: string; // Temporarily disabled
+  receiptUrl?: string;
   createdAt: string;
 }
 
@@ -39,6 +40,8 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<ExpensesData>>({});
   const [filterText, setFilterText] = useState('');
+  const [addReceiptFile, setAddReceiptFile] = useState<File | null>(null);
+  const [editReceiptFile, setEditReceiptFile] = useState<File | null>(null);
   
   // Load last used values from localStorage
   const getLastUsedValues = () => {
@@ -51,6 +54,16 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
     return {
       unit: '',
     };
+  };
+
+  // Convert file to base64 URL
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
   };
 
   const [addForm, setAddForm] = useState({
@@ -82,12 +95,19 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
       unit: item.unit || '',
       amount: item.amount,
       notes: item.notes || '',
-      // receiptUrl: item.receiptUrl || '', // Temporarily disabled
+      receiptUrl: item.receiptUrl || '',
     });
+    setEditReceiptFile(null); // Reset receipt file
   };
 
   const handleSave = async () => {
     try {
+      // Convert receipt file to base64 if present
+      let receiptUrl = editForm.receiptUrl;
+      if (editReceiptFile) {
+        receiptUrl = await fileToBase64(editReceiptFile);
+      }
+
       const response = await fetch(`/api/expenses/${editingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -98,7 +118,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
           unit: editForm.unit,
           amount: editForm.amount ? parseFloat(editForm.amount) : undefined,
           notes: editForm.notes,
-          // receiptUrl: editForm.receiptUrl, // Temporarily disabled
+          receiptUrl: receiptUrl,
         }),
       });
 
@@ -142,6 +162,12 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
         }));
       }
 
+      // Convert receipt file to base64 if present
+      let receiptUrl = addForm.receiptUrl;
+      if (addReceiptFile) {
+        receiptUrl = await fileToBase64(addReceiptFile);
+      }
+
       const response = await fetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -152,7 +178,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
           unit: addForm.unit,
           amount: addForm.amount ? parseFloat(addForm.amount) : undefined,
           notes: addForm.notes,
-          // receiptUrl: addForm.receiptUrl, // Temporarily disabled
+          receiptUrl: receiptUrl,
         }),
       });
 
@@ -259,18 +285,17 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                   onChange={(e) => setAddForm({ ...addForm, notes: e.target.value })}
                 />
               </div>
-              {/* <div>
-                <label className="text-sm font-medium">Receipt URL (optional)</label>
-                <Input
-                  type="url"
-                  placeholder="https://example.com/receipt.jpg"
-                  value={addForm.receiptUrl}
-                  onChange={(e) => setAddForm({ ...addForm, receiptUrl: e.target.value })}
+              <div>
+                <label className="text-sm font-medium">Receipt (optional)</label>
+                <ReceiptPicker
+                  onReceiptSelect={(file) => setAddReceiptFile(file)}
+                  currentReceiptUrl={addForm.receiptUrl}
+                  onRemoveReceipt={() => {
+                    setAddReceiptFile(null);
+                    setAddForm({ ...addForm, receiptUrl: '' });
+                  }}
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Upload receipt to cloud storage and paste URL here
-                </p>
-              </div> */}
+              </div>
               <Button onClick={handleAdd} className="w-full">
                 Add Expense
               </Button>
@@ -311,7 +336,7 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                 <th className="text-left p-2">Qty/Unit</th>
                 <th className="text-left p-2">Amount</th>
                 <th className="text-left p-2">Notes</th>
-                {/* <th className="text-left p-2">Receipt</th> */}
+                <th className="text-left p-2">Receipt</th>
                 <th className="text-left p-2">Actions</th>
               </tr>
             </thead>
@@ -386,9 +411,29 @@ export function ExpensesTable({ data, onRefresh, currency }: ExpensesTableProps)
                       item.notes || '-'
                     )}
                   </td>
-                  {/* <td className="p-2">
-                    Receipt URL temporarily disabled
-                  </td> */}
+                  <td className="p-2">
+                    {editingId === item.id ? (
+                      <ReceiptPicker
+                        onReceiptSelect={(file) => setEditReceiptFile(file)}
+                        currentReceiptUrl={editForm.receiptUrl}
+                        onRemoveReceipt={() => {
+                          setEditReceiptFile(null);
+                          setEditForm({ ...editForm, receiptUrl: '' });
+                        }}
+                      />
+                    ) : (
+                      item.receiptUrl ? (
+                        <img
+                          src={item.receiptUrl}
+                          alt="Receipt"
+                          className="h-12 w-12 object-cover rounded border cursor-pointer"
+                          onClick={() => window.open(item.receiptUrl, '_blank')}
+                        />
+                      ) : (
+                        '-'
+                      )
+                    )}
+                  </td>
                   <td className="p-2">
                     {editingId === item.id ? (
                       <div className="flex gap-2">

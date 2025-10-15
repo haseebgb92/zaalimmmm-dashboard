@@ -17,6 +17,7 @@ const expensesUpdateSchema = z.object({
   unit: z.string().optional(),
   amount: z.number().positive().optional(),
   notes: z.string().optional(),
+  receiptUrl: z.string().url().optional().or(z.literal('')),
 });
 
 export async function PUT(
@@ -41,6 +42,10 @@ export async function PUT(
 
     if (validatedData.amount) {
       updateData.amount = validatedData.amount.toString();
+    }
+
+    if (validatedData.receiptUrl !== undefined) {
+      updateData.receiptUrl = validatedData.receiptUrl || null;
     }
 
     const updatedExpense = await db
