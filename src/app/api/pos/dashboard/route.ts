@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
       easypaisa: 0,
     };
 
-    todayOrders.forEach((order: Record<string, unknown>) => {
+    orders.forEach((order: Record<string, unknown>) => {
       if (order.paymentMethod && paymentMethods.hasOwnProperty(order.paymentMethod as string)) {
         paymentMethods[order.paymentMethod as keyof typeof paymentMethods]++;
       }
