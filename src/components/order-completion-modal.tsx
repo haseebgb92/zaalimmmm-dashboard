@@ -2,16 +2,11 @@
 
 import { useState } from 'react'
 import { X, MessageCircle, CheckCircle, User } from 'lucide-react'
+import { PosProduct } from '@/lib/db/schema'
 
-interface OrderItem {
-  productId: number
+interface CartItem {
+  product: PosProduct
   quantity: number
-  unitPrice: number
-  subTotal: number
-  product: {
-    name: string
-    category: string
-  }
 }
 
 interface OrderCompletionModalProps {
@@ -19,7 +14,7 @@ interface OrderCompletionModalProps {
   onClose: () => void
   orderData: {
     orderNumber: string
-    cart: OrderItem[]
+    cart: CartItem[]
     total: number
     customerName: string
     customerPhone: string
@@ -38,7 +33,7 @@ export default function OrderCompletionModal({ isOpen, onClose, orderData }: Ord
 
   const generateRiderMessage = () => {
     const items = orderData.cart.map(item => 
-      `• ${item.product.name} x${item.quantity} = ₨${item.subTotal}`
+      `• ${item.product.name} x${item.quantity} = ₨${(Number(item.product.price) * item.quantity).toFixed(2)}`
     ).join('\n')
     
     return `🚚 *NEW DELIVERY ORDER* 🚚
@@ -63,7 +58,7 @@ Please confirm pickup and delivery! 🎯`
 
   const generateCustomerMessage = () => {
     const items = orderData.cart.map(item => 
-      `• ${item.product.name} x${item.quantity} = ₨${item.subTotal}`
+      `• ${item.product.name} x${item.quantity} = ₨${(Number(item.product.price) * item.quantity).toFixed(2)}`
     ).join('\n')
     
     return `🍽️ *ORDER CONFIRMED* 🍽️
@@ -174,7 +169,7 @@ Thank you for choosing Zaalimmmm Shawarma! 🙏`
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-gray-900">x{item.quantity}</p>
-                      <p className="text-sm text-gray-500">₨{item.subTotal}</p>
+                      <p className="text-sm text-gray-500">₨{(Number(item.product.price) * item.quantity).toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
