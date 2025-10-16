@@ -5,7 +5,19 @@ import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    const riders = await db.select().from(posRiders).where(eq(posRiders.isActive, true));
+    // Use raw SQL to avoid Drizzle ORM schema issues
+    const riders = await db.execute(`
+      SELECT 
+        id,
+        name,
+        phone_number as "phoneNumber",
+        is_active as "isActive",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM pos_riders 
+      WHERE is_active = true
+    `);
+    
     return NextResponse.json(riders);
   } catch (error) {
     console.error('Error fetching riders:', error);

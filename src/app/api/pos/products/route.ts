@@ -5,7 +5,21 @@ import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    const products = await db.select().from(posProducts).where(eq(posProducts.isActive, true)).orderBy(posProducts.category);
+    // Use raw SQL to avoid Drizzle ORM schema issues
+    const products = await db.execute(`
+      SELECT 
+        id,
+        name,
+        price,
+        category,
+        is_active as "isActive",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM pos_products 
+      WHERE is_active = true 
+      ORDER BY category
+    `);
+    
     return NextResponse.json(products);
   } catch (error) {
     console.error('Error fetching products:', error);
