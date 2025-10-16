@@ -4,7 +4,21 @@ import { posCustomers } from '@/lib/db/schema';
 
 export async function GET() {
   try {
-    const customers = await db.select().from(posCustomers);
+    // Use raw SQL to avoid Drizzle ORM schema issues
+    const customers = await db.execute(`
+      SELECT 
+        id,
+        name,
+        "phoneNumber",
+        email,
+        address,
+        "loyaltyPoints",
+        "totalSpent",
+        "createdAt",
+        "updatedAt"
+      FROM pos_customers
+    `);
+    
     return NextResponse.json(customers);
   } catch (error) {
     console.error('Error fetching customers:', error);

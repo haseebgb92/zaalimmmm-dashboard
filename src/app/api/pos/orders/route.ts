@@ -5,11 +5,27 @@ import { desc } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    const orders = await db
-      .select()
-      .from(posOrders)
-      .orderBy(desc(posOrders.createdAt))
-      .limit(100);
+    // Use raw SQL to avoid Drizzle ORM schema issues
+    const orders = await db.execute(`
+      SELECT 
+        id,
+        "orderNumber",
+        "customerId",
+        "riderId",
+        "totalAmount",
+        "discountAmount",
+        "finalAmount",
+        status,
+        "orderType",
+        "paymentMethod",
+        "transactionId",
+        notes,
+        "createdAt",
+        "updatedAt"
+      FROM pos_orders 
+      ORDER BY "createdAt" DESC
+      LIMIT 100
+    `);
 
     return NextResponse.json(orders);
   } catch (error) {

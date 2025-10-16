@@ -8,21 +8,36 @@ export async function GET() {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
-    // Get today's orders
-    const todayOrders = await db
-      .select()
-      .from(posOrders)
-      .where(gte(posOrders.createdAt, startOfDay));
+    // Get today's orders using raw SQL
+    const todayOrders = await db.execute(`
+      SELECT 
+        id,
+        "orderNumber",
+        "customerId",
+        "riderId",
+        "totalAmount",
+        "discountAmount",
+        "finalAmount",
+        status,
+        "orderType",
+        "paymentMethod",
+        "transactionId",
+        notes,
+        "createdAt",
+        "updatedAt"
+      FROM pos_orders 
+      WHERE "createdAt" >= $1
+    `, [startOfDay]);
 
     // Calculate stats
     const todayOrdersCount = todayOrders.length;
-    const todayRevenue = todayOrders.reduce((sum, order) => sum + Number(order.finalAmount), 0);
-    const todayDiscounts = todayOrders.reduce((sum, order) => sum + Number(order.discountAmount), 0);
+    const todayRevenue = todayOrders.reduce((sum: number, order: any) => sum + Number(order.finalAmount), 0);
+    const todayDiscounts = todayOrders.reduce((sum: number, order: any) => sum + Number(order.discountAmount), 0);
     const averageOrderValue = todayOrdersCount > 0 ? todayRevenue / todayOrdersCount : 0;
 
     // Calculate peak hour
     const hourlyStats: { [hour: number]: { orders: number; revenue: number } } = {};
-    todayOrders.forEach(order => {
+    todayOrders.forEach((order: any) => {
       const hour = new Date(order.createdAt).getHours();
       if (!hourlyStats[hour]) {
         hourlyStats[hour] = { orders: 0, revenue: 0 };
@@ -43,7 +58,7 @@ export async function GET() {
       easypaisa: 0,
     };
 
-    todayOrders.forEach(order => {
+    todayOrders.forEach((order: any) => {
       if (order.paymentMethod && paymentMethods.hasOwnProperty(order.paymentMethod)) {
         paymentMethods[order.paymentMethod as keyof typeof paymentMethods]++;
       }
