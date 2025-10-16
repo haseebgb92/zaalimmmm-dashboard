@@ -5,7 +5,10 @@ export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
 
+    console.log('Login attempt:', { username, password: password ? '***' : 'empty' });
+
     if (!username || !password) {
+      console.log('Missing username or password');
       return NextResponse.json(
         { error: 'Username and password are required' },
         { status: 400 }
@@ -13,8 +16,10 @@ export async function POST(request: NextRequest) {
     }
 
     const user = authenticateUser(username, password);
+    console.log('Authentication result:', user ? 'Success' : 'Failed');
 
     if (!user) {
+      console.log('Invalid credentials for user:', username);
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }

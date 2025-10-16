@@ -37,10 +37,29 @@ const passwords: Record<string, string> = {
 };
 
 export function authenticateUser(username: string, password: string): User | null {
+  console.log('Authenticating user:', username);
+  console.log('Available users:', users.map(u => u.username));
+  console.log('Available passwords:', Object.keys(passwords));
+  
   const user = users.find(u => u.username === username);
-  if (!user || passwords[username] !== password) {
+  console.log('Found user:', user);
+  
+  if (!user) {
+    console.log('User not found');
     return null;
   }
+  
+  const expectedPassword = passwords[username];
+  console.log('Expected password:', expectedPassword ? '***' : 'undefined');
+  console.log('Provided password:', password ? '***' : 'empty');
+  console.log('Password match:', expectedPassword === password);
+  
+  if (passwords[username] !== password) {
+    console.log('Password mismatch');
+    return null;
+  }
+  
+  console.log('Authentication successful');
   return user;
 }
 

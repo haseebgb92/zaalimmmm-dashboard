@@ -15,6 +15,8 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
+    console.log('Attempting login with:', { username, password: password ? '***' : 'empty' });
+
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -24,14 +26,18 @@ export default function LoginPage() {
         body: JSON.stringify({ username, password }),
       });
 
+      console.log('Login response status:', response.status);
       const data = await response.json();
+      console.log('Login response data:', data);
 
       if (response.ok) {
+        console.log('Login successful, storing tokens');
         // Store auth token
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userRole', data.user.role);
         localStorage.setItem('userName', data.user.name);
         
+        console.log('Redirecting to:', data.user.role);
         // Redirect based on role
         if (data.user.role === 'pos') {
           router.push('/pos');
@@ -41,9 +47,11 @@ export default function LoginPage() {
           router.push('/admin');
         }
       } else {
+        console.log('Login failed:', data.error);
         setError(data.error || 'Login failed');
       }
-    } catch {
+    } catch (error) {
+      console.log('Login error:', error);
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
