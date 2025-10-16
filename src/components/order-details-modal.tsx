@@ -50,12 +50,6 @@ export default function OrderDetailsModal({ orderId, isOpen, onClose, onStatusUp
   const [loading, setLoading] = useState(false)
   const [updating, setUpdating] = useState(false)
 
-  useEffect(() => {
-    if (isOpen && orderId) {
-      fetchOrderDetails()
-    }
-  }, [isOpen, orderId, fetchOrderDetails])
-
   const fetchOrderDetails = useCallback(async () => {
     setLoading(true)
     try {
@@ -69,6 +63,12 @@ export default function OrderDetailsModal({ orderId, isOpen, onClose, onStatusUp
       setLoading(false)
     }
   }, [orderId])
+
+  useEffect(() => {
+    if (isOpen && orderId) {
+      fetchOrderDetails()
+    }
+  }, [isOpen, orderId, fetchOrderDetails])
 
   const updateOrderStatus = async (newStatus: string) => {
     setUpdating(true)
