@@ -72,8 +72,34 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching dashboard data:', error);
+    
+    // Return empty data if table doesn't exist yet
+    if (error instanceof Error && (error.message.includes('does not exist') || error.message.includes('relation') && error.message.includes('does not exist'))) {
+      console.log('POS orders table does not exist, returning empty dashboard data');
+      return NextResponse.json({
+        stats: {
+          todayOrders: 0,
+          todayRevenue: 0,
+          todayDiscounts: 0,
+          averageOrderValue: 0,
+          peakHour: 0,
+          peakHourOrders: 0,
+          paymentMethods: { cash: 0, card: 0, jazzcash: 0, easypaisa: 0 },
+        },
+        hourlyData: Array.from({ length: 24 }, (_, hour) => ({
+          hour,
+          orders: 0,
+          revenue: 0,
+        })),
+      });
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to fetch dashboard data' },
+      { 
+        error: 'Failed to fetch dashboard data',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        needsMigration: true
+      },
       { status: 500 }
     );
   }

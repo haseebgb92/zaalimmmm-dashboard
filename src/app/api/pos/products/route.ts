@@ -9,12 +9,19 @@ export async function GET() {
     return NextResponse.json(products);
   } catch (error) {
     console.error('Error fetching products:', error);
+    
     // Return empty array if table doesn't exist yet
-    if (error instanceof Error && error.message.includes('does not exist')) {
+    if (error instanceof Error && (error.message.includes('does not exist') || error.message.includes('relation') && error.message.includes('does not exist'))) {
+      console.log('POS products table does not exist, returning empty array');
       return NextResponse.json([]);
     }
+    
     return NextResponse.json(
-      { error: 'Failed to fetch products' },
+      { 
+        error: 'Failed to fetch products',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        needsMigration: true
+      },
       { status: 500 }
     );
   }

@@ -9,8 +9,19 @@ export async function GET() {
     return NextResponse.json(riders);
   } catch (error) {
     console.error('Error fetching riders:', error);
+    
+    // Return empty array if table doesn't exist yet
+    if (error instanceof Error && (error.message.includes('does not exist') || error.message.includes('relation') && error.message.includes('does not exist'))) {
+      console.log('POS riders table does not exist, returning empty array');
+      return NextResponse.json([]);
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to fetch riders' },
+      { 
+        error: 'Failed to fetch riders',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        needsMigration: true
+      },
       { status: 500 }
     );
   }
