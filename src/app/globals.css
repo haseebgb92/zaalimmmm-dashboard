@@ -146,6 +146,24 @@
     margin-top: 1rem;
     margin-bottom: 1rem;
   }
+  
+  /* Fix bottom bar overlap */
+  .main-content {
+    padding-bottom: 100px;
+  }
+  
+  /* Responsive top bar buttons */
+  .top-bar-buttons {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .top-bar-buttons button {
+    flex: 1;
+    min-width: 120px;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+  }
 }
 
 /* PWA specific styles */

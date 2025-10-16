@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { X, MessageCircle, CheckCircle, User } from 'lucide-react'
+import { X, MessageCircle, CheckCircle, User, Printer } from 'lucide-react'
 import { PosProduct } from '@/lib/db/schema'
+import { thermalPrinter } from '@/lib/thermal-printer'
 
 interface CartItem {
   product: PosProduct
@@ -28,6 +29,7 @@ interface OrderCompletionModalProps {
 export default function OrderCompletionModal({ isOpen, onClose, orderData }: OrderCompletionModalProps) {
   const [sendingToRider, setSendingToRider] = useState(false)
   const [sendingToCustomer, setSendingToCustomer] = useState(false)
+  const [printing, setPrinting] = useState(false)
 
   if (!isOpen) return null
 
@@ -106,6 +108,21 @@ Thank you for choosing Zaalimmmm Shawarma! 🙏`
     setTimeout(() => {
       setSendingToCustomer(false)
     }, 2000)
+  }
+
+  const printReceipt = async () => {
+    setPrinting(true)
+    try {
+      const success = await thermalPrinter.printReceipt(orderData)
+      if (!success) {
+        alert('Failed to print receipt. Please check printer connection.')
+      }
+    } catch (error) {
+      console.error('Print error:', error)
+      alert('Failed to print receipt. Please try again.')
+    } finally {
+      setPrinting(false)
+    }
   }
 
   return (
@@ -189,7 +206,7 @@ Thank you for choosing Zaalimmmm Shawarma! 🙏`
                 Send WhatsApp Messages
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Send to Rider */}
                 <button
                   onClick={sendToRider}
@@ -216,6 +233,21 @@ Thank you for choosing Zaalimmmm Shawarma! 🙏`
                     <p className="font-medium text-gray-900">Send to Customer</p>
                     <p className="text-sm text-gray-500">
                       {sendingToCustomer ? 'Sending...' : 'Order confirmation & rider info'}
+                    </p>
+                  </div>
+                </button>
+
+                {/* Print Receipt */}
+                <button
+                  onClick={printReceipt}
+                  disabled={printing}
+                  className="flex items-center justify-center p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="text-center">
+                    <Printer className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                    <p className="font-medium text-gray-900">Print Receipt</p>
+                    <p className="text-sm text-gray-500">
+                      {printing ? 'Printing...' : 'Thermal printer receipt'}
                     </p>
                   </div>
                 </button>
