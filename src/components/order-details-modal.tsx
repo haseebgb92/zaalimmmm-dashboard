@@ -151,7 +151,7 @@ export default function OrderDetailsModal({ orderId, isOpen, onClose, onStatusUp
   const sendWhatsAppToCustomer = () => {
     if (!order?.customer_phone) return
     
-    const items = items.map(item => 
+    const itemsList = items.map(item => 
       `• ${item.product_name} x${item.quantity} = ₨${item.subTotal}`
     ).join('\n')
     
@@ -160,7 +160,7 @@ export default function OrderDetailsModal({ orderId, isOpen, onClose, onStatusUp
 📋 *Order #${order.orderNumber}*
 
 📦 *Your Order:*
-${items}
+${itemsList}
 
 💰 *Total Amount: ₨${order.finalAmount}*
 💳 *Payment: ${order.paymentMethod}*
@@ -182,7 +182,7 @@ Thank you for choosing Zaalimmmm Shawarma! 🙏`
   const sendWhatsAppToRider = () => {
     if (!order?.rider_phone) return
     
-    const items = items.map(item => 
+    const itemsList = items.map(item => 
       `• ${item.product_name} x${item.quantity} = ₨${item.subTotal}`
     ).join('\n')
     
@@ -196,7 +196,7 @@ Phone: ${order.customer_phone || 'N/A'}
 Address: ${order.customer_address || 'N/A'}
 
 📦 *Order Items:*
-${items}
+${itemsList}
 
 💰 *Total Amount: ₨${order.finalAmount}*
 💳 *Payment: ${order.paymentMethod}*
