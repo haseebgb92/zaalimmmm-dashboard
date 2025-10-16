@@ -5,17 +5,17 @@ import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    // Use raw SQL to avoid Drizzle ORM schema issues
+    // Use raw SQL with correct column names from your database
     const riders = await db.execute(`
       SELECT 
         id,
         name,
-        phone_number as "phoneNumber",
-        is_active as "isActive",
-        created_at as "createdAt",
-        updated_at as "updatedAt"
+        "phoneNumber",
+        "isActive",
+        "createdAt",
+        "updatedAt"
       FROM pos_riders 
-      WHERE is_active = true
+      WHERE "isActive" = true
     `);
     
     return NextResponse.json(riders);

@@ -5,18 +5,18 @@ import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    // Use raw SQL to avoid Drizzle ORM schema issues
+    // Use raw SQL with correct column names from your database
     const products = await db.execute(`
       SELECT 
         id,
         name,
         price,
         category,
-        is_active as "isActive",
-        created_at as "createdAt",
-        updated_at as "updatedAt"
+        "isActive",
+        "createdAt",
+        "updatedAt"
       FROM pos_products 
-      WHERE is_active = true 
+      WHERE "isActive" = true 
       ORDER BY category
     `);
     
