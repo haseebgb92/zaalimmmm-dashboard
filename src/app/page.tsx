@@ -59,6 +59,7 @@ export default function Dashboard() {
   const [dateRange, setDateRange] = useState<DateRange>(getDateRange('thisWeek'));
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
   const [currency, setCurrency] = useState('PKR');
   const router = useRouter();
 
@@ -72,6 +73,9 @@ export default function Dashboard() {
         router.push('/login');
         return;
       }
+      
+      // Set auth loading to false after auth check
+      setAuthLoading(false);
     }
   }, [router]);
 
@@ -139,6 +143,14 @@ export default function Dashboard() {
     localStorage.removeItem('userName');
     router.push('/login');
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
