@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 interface DashboardStats {
-  todayOrders: number
-  todayRevenue: number
-  todayDiscounts: number
+  ordersCount: number
+  totalRevenue: number
+  totalDiscounts: number
   averageOrderValue: number
   peakHour: number
   peakHourOrders: number
@@ -19,6 +19,21 @@ interface DashboardStats {
   }
 }
 
+interface TopItem {
+  name: string
+  category: string
+  price: string
+  total_quantity: number
+  total_amount: number
+  order_count: number
+}
+
+interface DateRange {
+  start: string
+  end: string
+  filter: string
+}
+
 interface HourlyData {
   hour: number
   orders: number
@@ -28,8 +43,11 @@ interface HourlyData {
 export default function POSDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [hourlyData, setHourlyData] = useState<HourlyData[]>([])
+  const [topItems, setTopItems] = useState<TopItem[]>([])
+  const [dateRange, setDateRange] = useState<DateRange | null>(null)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+  const [selectedFilter, setSelectedFilter] = useState('thisWeek')
   const router = useRouter()
 
   // Check authentication (only on client side)
@@ -51,13 +69,18 @@ export default function POSDashboardPage() {
     }
   }, [router])
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (filter = selectedFilter) => {
     try {
       setLoading(true)
-      const response = await fetch('/api/pos/dashboard')
+      const url = filter === 'custom' ? 
+        `/api/pos/dashboard?filter=${filter}` : 
+        `/api/pos/dashboard?filter=${filter}`
+      const response = await fetch(url)
       const data = await response.json()
       setStats(data.stats)
       setHourlyData(data.hourlyData)
+      setTopItems(data.topItems || [])
+      setDateRange(data.dateRange)
       setLastUpdated(new Date())
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -140,14 +163,53 @@ export default function POSDashboardPage() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Date Filter */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <span className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-2">
+              <span className="text-white text-xs">📅</span>
+            </span>
+            Date Filter
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: 'today', label: 'Today' },
+              { key: 'yesterday', label: 'Yesterday' },
+              { key: 'thisWeek', label: 'This Week' },
+              { key: 'previousWeek', label: 'Previous Week' },
+              { key: 'thisMonth', label: 'This Month' }
+            ].map((filter) => (
+              <button
+                key={filter.key}
+                onClick={() => {
+                  setSelectedFilter(filter.key)
+                  fetchDashboardData(filter.key)
+                }}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  selectedFilter === filter.key
+                    ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+          {dateRange && (
+            <div className="mt-4 text-sm text-gray-600">
+              Showing data from {new Date(dateRange.start).toLocaleDateString()} to {new Date(dateRange.end).toLocaleDateString()}
+            </div>
+          )}
+        </div>
+
         {/* Live Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Today&apos;s Orders</p>
+                <p className="text-sm font-medium text-gray-500 mb-1">Total Orders</p>
                 <p className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
-                  {stats?.todayOrders || 0}
+                  {stats?.ordersCount || 0}
                 </p>
               </div>
               <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
@@ -159,9 +221,9 @@ export default function POSDashboardPage() {
           <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Today&apos;s Revenue</p>
+                <p className="text-sm font-medium text-gray-500 mb-1">Total Revenue</p>
                 <p className="text-3xl font-bold bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
-                  {formatCurrency(stats?.todayRevenue || 0)}
+                  {formatCurrency(stats?.totalRevenue || 0)}
                 </p>
               </div>
               <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
@@ -199,6 +261,34 @@ export default function POSDashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Top Selling Items */}
+        {topItems.length > 0 && (
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+              <span className="w-6 h-6 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mr-2">
+                <span className="text-white text-xs">🏆</span>
+              </span>
+              Top Selling Items
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {topItems.slice(0, 6).map((item, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-gray-800">{item.name}</h4>
+                    <span className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">#{index + 1}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">{item.category}</p>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-green-600 font-medium">Qty: {item.total_quantity}</span>
+                    <span className="text-blue-600 font-medium">₨{item.total_amount}</span>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">{item.order_count} orders</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
