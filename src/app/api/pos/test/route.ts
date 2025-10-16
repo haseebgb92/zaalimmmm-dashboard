@@ -2,16 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { handleCors, addCorsHeaders } from '@/lib/cors';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export async function POST(request: NextRequest) {
+  // Handle CORS preflight
+  const corsResponse = handleCors(request);
+  if (corsResponse) return corsResponse;
+
   try {
     const body = await request.json();
     const { testType = 'single_order' } = body;
     
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.vercel.app';
+    // Get the current request URL to determine the base URL
+    const url = new URL(request.url);
+    const baseUrl = `${url.protocol}//${url.host}`;
     
     // Generate test data based on type
     let testData;
@@ -65,11 +72,12 @@ export async function POST(request: NextRequest) {
         break;
         
       default:
-        return NextResponse.json({
+        const errorResponse = NextResponse.json({
           success: false,
           error: 'Invalid test type',
           availableTypes: ['single_order', 'multiple_orders', 'late_night_order', 'early_morning_order'],
         }, { status: 400 });
+        return addCorsHeaders(errorResponse);
     }
     
     // Send test data to the sales API
@@ -83,7 +91,7 @@ export async function POST(request: NextRequest) {
     
     const result = await response.json();
     
-    return NextResponse.json({
+    const successResponse = NextResponse.json({
       success: true,
       testType,
       description,
@@ -92,14 +100,16 @@ export async function POST(request: NextRequest) {
       businessDate: getBusinessDate(testData.timestamp),
       currentTime: dayjs().tz('Asia/Karachi').format('YYYY-MM-DD HH:mm:ss'),
     });
+    return addCorsHeaders(successResponse);
     
   } catch (error) {
     console.error('POS Test Error:', error);
-    return NextResponse.json({
+    const errorResponse = NextResponse.json({
       success: false,
       error: 'Test failed',
       message: error instanceof Error ? error.message : 'Unknown error',
     }, { status: 500 });
+    return addCorsHeaders(errorResponse);
   }
 }
 
@@ -118,7 +128,7 @@ function getBusinessDate(timestamp: string): string {
 }
 
 export async function GET() {
-  return NextResponse.json({
+  const response = NextResponse.json({
     message: 'POS Test Endpoint',
     usage: 'Send POST request with testType parameter',
     availableTestTypes: [
@@ -142,4 +152,5 @@ export async function GET() {
     businessHours: '2:00 PM - 2:00 AM (Pakistan Time)',
     timezone: 'Asia/Karachi',
   });
+  return addCorsHeaders(response);
 }
