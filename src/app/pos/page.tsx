@@ -254,7 +254,7 @@ export default function POSPage() {
         transactionId: transactionId || null
       }
 
-      const response = await fetch('/api/pos/orders-simple', {
+      const response = await fetch('/api/pos/orders-fixed', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)

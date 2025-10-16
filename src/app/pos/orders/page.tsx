@@ -15,6 +15,7 @@ export default function POSOrdersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showRefundModal, setShowRefundModal] = useState(false)
   const [refundOrder, setRefundOrder] = useState<PosOrder | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
   const router = useRouter()
 
   // Check authentication (only on client side)
@@ -49,7 +50,11 @@ export default function POSOrdersPage() {
 
   const filteredOrders = orders.filter(order => {
     if (filter === 'all') return true
-    return order.status === filter
+    if (order.status !== filter) return false
+    
+    if (!searchTerm) return true
+    return order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           (order.paymentMethod && order.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase()))
   })
 
   const getStatusColor = (status: string) => {
@@ -179,6 +184,20 @@ export default function POSOrdersPage() {
             <p className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
               ₨{orders.reduce((sum, order) => sum + Number(order.finalAmount), 0).toFixed(2)}
             </p>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="mb-6">
+          <div className="bg-white rounded-lg shadow-sm border p-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Search Orders</h3>
+            <input
+              type="text"
+              placeholder="Search by order number or payment method..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
         </div>
 

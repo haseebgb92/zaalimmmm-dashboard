@@ -19,6 +19,7 @@ export default function POSCustomersPage() {
     email: '',
     address: ''
   })
+  const [searchTerm, setSearchTerm] = useState('')
   const router = useRouter()
 
   // Check authentication (only on client side)
@@ -107,6 +108,13 @@ export default function POSCustomersPage() {
     }
   }
 
+  const filteredCustomers = customers.filter(customer => {
+    if (!searchTerm) return true
+    return customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           (customer.phoneNumber && customer.phoneNumber.includes(searchTerm)) ||
+           (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  })
+
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('authToken')
@@ -163,6 +171,20 @@ export default function POSCustomersPage() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search */}
+        <div className="mb-6">
+          <div className="bg-white rounded-lg shadow-sm border p-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Search Customers</h3>
+            <input
+              type="text"
+              placeholder="Search by name, phone, or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+        </div>
+
         {/* Statistics */}
         <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-4">
@@ -195,11 +217,11 @@ export default function POSCustomersPage() {
         <div className="bg-white rounded-lg shadow-sm border">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold">
-              All Customers ({customers.length})
+              {searchTerm ? `Search Results (${filteredCustomers.length})` : `All Customers (${customers.length})`}
             </h2>
           </div>
 
-          {customers.length === 0 ? (
+          {filteredCustomers.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               No customers found. Add your first customer to get started.
             </div>
@@ -229,7 +251,7 @@ export default function POSCustomersPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {customers.map((customer) => (
+                  {filteredCustomers.map((customer) => (
                     <tr key={customer.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{customer.name}</div>
