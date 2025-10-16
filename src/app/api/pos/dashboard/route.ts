@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { posOrders } from '@/lib/db/schema';
-import { gte } from 'drizzle-orm';
 
 export async function GET() {
   try {
@@ -31,14 +29,14 @@ export async function GET() {
 
     // Calculate stats
     const todayOrdersCount = todayOrders.length;
-    const todayRevenue = todayOrders.reduce((sum: number, order: any) => sum + Number(order.finalAmount), 0);
-    const todayDiscounts = todayOrders.reduce((sum: number, order: any) => sum + Number(order.discountAmount), 0);
+    const todayRevenue = todayOrders.reduce((sum: number, order: Record<string, unknown>) => sum + Number(order.finalAmount), 0);
+    const todayDiscounts = todayOrders.reduce((sum: number, order: Record<string, unknown>) => sum + Number(order.discountAmount), 0);
     const averageOrderValue = todayOrdersCount > 0 ? todayRevenue / todayOrdersCount : 0;
 
     // Calculate peak hour
     const hourlyStats: { [hour: number]: { orders: number; revenue: number } } = {};
-    todayOrders.forEach((order: any) => {
-      const hour = new Date(order.createdAt).getHours();
+    todayOrders.forEach((order: Record<string, unknown>) => {
+      const hour = new Date(order.createdAt as string).getHours();
       if (!hourlyStats[hour]) {
         hourlyStats[hour] = { orders: 0, revenue: 0 };
       }
@@ -58,8 +56,8 @@ export async function GET() {
       easypaisa: 0,
     };
 
-    todayOrders.forEach((order: any) => {
-      if (order.paymentMethod && paymentMethods.hasOwnProperty(order.paymentMethod)) {
+    todayOrders.forEach((order: Record<string, unknown>) => {
+      if (order.paymentMethod && paymentMethods.hasOwnProperty(order.paymentMethod as string)) {
         paymentMethods[order.paymentMethod as keyof typeof paymentMethods]++;
       }
     });
