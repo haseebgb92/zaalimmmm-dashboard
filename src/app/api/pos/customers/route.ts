@@ -41,12 +41,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newCustomer = await db.insert(posCustomers).values({
-      name,
-      phoneNumber,
-      email,
-      address,
-    }).returning();
+    // Create customer using raw SQL
+    const newCustomer = await db.execute(`
+      INSERT INTO pos_customers (
+        name, "phoneNumber", email, address, "loyaltyPoints", "totalSpent", "createdAt", "updatedAt"
+      ) VALUES (
+        '${name}', 
+        ${phoneNumber ? `'${phoneNumber}'` : 'NULL'}, 
+        ${email ? `'${email}'` : 'NULL'}, 
+        ${address ? `'${address}'` : 'NULL'}, 
+        0, 
+        '0', 
+        NOW(), 
+        NOW()
+      ) RETURNING *
+    `);
 
     return NextResponse.json(newCustomer[0]);
   } catch (error) {

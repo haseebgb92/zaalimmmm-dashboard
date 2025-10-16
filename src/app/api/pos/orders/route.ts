@@ -61,30 +61,46 @@ export async function POST(request: NextRequest) {
     // Generate order number
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
-    // Create order
-    const newOrder = await db.insert(posOrders).values({
-      orderNumber,
-      customerId,
-      riderId,
-      totalAmount: totalAmount.toString(),
-      discountAmount: discountAmount.toString(),
-      finalAmount: finalAmount.toString(),
-      orderType,
-      paymentMethod,
-      transactionId,
-      status: 'completed',
-    }).returning();
+    // Create order using raw SQL
+    const newOrder = await db.execute(`
+      INSERT INTO pos_orders (
+        "orderNumber", "customerId", "riderId", "totalAmount", 
+        "discountAmount", "finalAmount", "orderType", "paymentMethod", 
+        "transactionId", status, "createdAt", "updatedAt"
+      ) VALUES (
+        '${orderNumber}', 
+        ${customerId || 'NULL'}, 
+        ${riderId || 'NULL'}, 
+        '${totalAmount.toString()}', 
+        '${discountAmount.toString()}', 
+        '${finalAmount.toString()}', 
+        '${orderType}', 
+        '${paymentMethod}', 
+        ${transactionId ? `'${transactionId}'` : 'NULL'}, 
+        'completed', 
+        NOW(), 
+        NOW()
+      ) RETURNING id
+    `);
 
-    // Create order items
-    await db.insert(posOrderItems).values(
-      items.map((item: {productId: number; quantity: number; unitPrice: number; subTotal: number}) => ({
-        orderId: newOrder[0].id,
-        productId: item.productId,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice.toString(),
-        subTotal: item.subTotal.toString(),
-      }))
-    ).returning();
+    const orderId = newOrder[0].id;
+
+    // Create order items using raw SQL
+    for (const item of items) {
+      await db.execute(`
+        INSERT INTO pos_order_items (
+          "orderId", "productId", quantity, "unitPrice", "subTotal", "createdAt", "updatedAt"
+        ) VALUES (
+          ${orderId}, 
+          ${item.productId}, 
+          ${item.quantity}, 
+          '${item.unitPrice.toString()}', 
+          '${item.subTotal.toString()}', 
+          NOW(), 
+          NOW()
+        )
+      `);
+    }
 
     // Update daily sales
     const today = new Date().toISOString().split('T')[0];
@@ -111,8 +127,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      orderNumber: newOrder[0].orderNumber,
-      orderId: newOrder[0].id,
+      orderNumber: orderNumber,
+      orderId: orderId,
     });
   } catch (error) {
     console.error('Error creating order:', error);

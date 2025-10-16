@@ -1,13 +1,75 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    const { searchParams } = new URL(request.url);
+    const dateFilter = searchParams.get('filter') || 'thisWeek';
+    
+    // Calculate date range based on filter
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date = new Date(now);
+    
+    switch (dateFilter) {
+      case 'today':
+        startDate = new Date(now);
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case 'yesterday':
+        startDate = new Date(now);
+        startDate.setDate(startDate.getDate() - 1);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(startDate);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case 'thisWeek':
+        startDate = new Date(now);
+        const dayOfWeek = startDate.getDay();
+        startDate.setDate(startDate.getDate() - dayOfWeek);
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case 'previousWeek':
+        startDate = new Date(now);
+        const prevDayOfWeek = startDate.getDay();
+        startDate.setDate(startDate.getDate() - prevDayOfWeek - 7);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 6);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case 'thisMonth':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        break;
+      case 'custom':
+        const customStart = searchParams.get('start');
+        const customEnd = searchParams.get('end');
+        if (customStart && customEnd) {
+          startDate = new Date(customStart);
+          endDate = new Date(customEnd);
+          endDate.setHours(23, 59, 59, 999);
+        } else {
+          // Default to this week if custom dates not provided
+          startDate = new Date(now);
+          const dayOfWeek = startDate.getDay();
+          startDate.setDate(startDate.getDate() - dayOfWeek);
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setHours(23, 59, 59, 999);
+        }
+        break;
+      default:
+        startDate = new Date(now);
+        const defaultDayOfWeek = startDate.getDay();
+        startDate.setDate(startDate.getDate() - defaultDayOfWeek);
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+    }
 
-    // Get today's orders using raw SQL
-    const todayOrders = await db.execute(`
+    // Get orders for the selected date range
+    const orders = await db.execute(`
       SELECT 
         id,
         "orderNumber",
@@ -24,18 +86,38 @@ export async function GET() {
         "createdAt",
         "updatedAt"
       FROM pos_orders 
-      WHERE "createdAt" >= '${startOfDay.toISOString()}'
+      WHERE "createdAt" >= '${startDate.toISOString()}' 
+      AND "createdAt" <= '${endDate.toISOString()}'
+    `);
+    
+    // Get top selling items for the date range
+    const topItems = await db.execute(`
+      SELECT 
+        p.name,
+        p.category,
+        p.price,
+        SUM(oi.quantity) as total_quantity,
+        SUM(oi."subTotal") as total_amount,
+        COUNT(DISTINCT oi."orderId") as order_count
+      FROM pos_order_items oi
+      JOIN pos_products p ON oi."productId" = p.id
+      JOIN pos_orders o ON oi."orderId" = o.id
+      WHERE o."createdAt" >= '${startDate.toISOString()}' 
+      AND o."createdAt" <= '${endDate.toISOString()}'
+      GROUP BY p.id, p.name, p.category, p.price
+      ORDER BY total_quantity DESC
+      LIMIT 10
     `);
 
     // Calculate stats
-    const todayOrdersCount = todayOrders.length;
-    const todayRevenue = todayOrders.reduce((sum: number, order: Record<string, unknown>) => sum + Number(order.finalAmount), 0);
-    const todayDiscounts = todayOrders.reduce((sum: number, order: Record<string, unknown>) => sum + Number(order.discountAmount), 0);
-    const averageOrderValue = todayOrdersCount > 0 ? todayRevenue / todayOrdersCount : 0;
+    const ordersCount = orders.length;
+    const totalRevenue = orders.reduce((sum: number, order: Record<string, unknown>) => sum + Number(order.finalAmount), 0);
+    const totalDiscounts = orders.reduce((sum: number, order: Record<string, unknown>) => sum + Number(order.discountAmount), 0);
+    const averageOrderValue = ordersCount > 0 ? totalRevenue / ordersCount : 0;
 
     // Calculate peak hour
     const hourlyStats: { [hour: number]: { orders: number; revenue: number } } = {};
-    todayOrders.forEach((order: Record<string, unknown>) => {
+    orders.forEach((order: Record<string, unknown>) => {
       const hour = new Date(order.createdAt as string).getHours();
       if (!hourlyStats[hour]) {
         hourlyStats[hour] = { orders: 0, revenue: 0 };
