@@ -8,15 +8,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for auth token in localStorage (client-side)
-  // This is a simple check - in production, use proper JWT validation
-  const authToken = request.cookies.get('authToken')?.value;
+  // For client-side routes, we'll let the client handle authentication
+  // The middleware will only redirect if there's an explicit redirect needed
+  // Client-side authentication check will be handled in the pages themselves
   
-  if (!authToken && pathname !== '/login') {
-    // Redirect to login if no token
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
   return NextResponse.next();
 }
 

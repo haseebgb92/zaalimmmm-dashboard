@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
 
     const user = authenticateUser(username, password);
     console.log('Authentication result:', user ? 'Success' : 'Failed');
+    console.log('User object:', user);
 
     if (!user) {
       console.log('Invalid credentials for user:', username);
@@ -27,16 +28,20 @@ export async function POST(request: NextRequest) {
     }
 
     const token = createAuthToken(user);
+    console.log('Generated token:', token);
+
+    const userResponse = {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      name: user.name,
+    };
+    console.log('User response object:', userResponse);
 
     return NextResponse.json({
       success: true,
       token,
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        name: user.name,
-      },
+      user: userResponse,
     });
   } catch (error) {
     console.error('Login error:', error);
