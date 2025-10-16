@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/date-range-picker';
@@ -8,7 +9,7 @@ import { KPICards } from '@/components/kpi-cards';
 import { Charts } from '@/components/charts';
 import { MobileNav } from '@/components/mobile-nav';
 import { DateRange, getDateRange } from '@/lib/date-utils';
-import { Download, Settings, FileText, User } from 'lucide-react';
+import { Download, Settings, FileText, User, LogOut } from 'lucide-react';
 import Link from 'next/link';
 
 interface SummaryData {
@@ -59,6 +60,18 @@ export default function Dashboard() {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [currency, setCurrency] = useState('PKR');
+  const router = useRouter();
+
+  // Check authentication
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const role = localStorage.getItem('userRole');
+    
+    if (!token || (role !== 'dashboard' && role !== 'admin')) {
+      router.push('/login');
+      return;
+    }
+  }, [router]);
 
   const fetchSettings = async () => {
     try {
@@ -118,6 +131,13 @@ export default function Dashboard() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userName');
+    router.push('/login');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile Navigation */}
@@ -154,6 +174,10 @@ export default function Dashboard() {
                 Settings
               </Button>
             </Link>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </div>
 
