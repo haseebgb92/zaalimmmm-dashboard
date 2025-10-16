@@ -37,7 +37,10 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== ORDER CREATION START ===');
     const body = await request.json();
+    console.log('Request body:', body);
+    
     const {
       items,
       totalAmount,
@@ -49,8 +52,21 @@ export async function POST(request: NextRequest) {
       paymentMethod = 'cash',
       transactionId,
     } = body;
+    
+    console.log('Parsed data:', {
+      items: items?.length,
+      totalAmount,
+      discountAmount,
+      finalAmount,
+      customerId,
+      riderId,
+      orderType,
+      paymentMethod,
+      transactionId
+    });
 
     if (!items || items.length === 0) {
+      console.log('ERROR: No items provided');
       return NextResponse.json(
         { error: 'Order items are required' },
         { status: 400 }
@@ -59,9 +75,11 @@ export async function POST(request: NextRequest) {
 
     // Generate order number
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+    console.log('Generated order number:', orderNumber);
 
     // Create order using raw SQL with proper escaping
-    const newOrder = await db.execute(`
+    console.log('Creating order in database...');
+    const orderSQL = `
       INSERT INTO pos_orders (
         "orderNumber", "customerId", "riderId", "totalAmount", 
         "discountAmount", "finalAmount", "orderType", "paymentMethod", 
@@ -80,13 +98,19 @@ export async function POST(request: NextRequest) {
         NOW(), 
         NOW()
       ) RETURNING id
-    `);
+    `;
+    
+    console.log('Order SQL:', orderSQL);
+    const newOrder = await db.execute(orderSQL);
 
     const orderId = newOrder[0].id;
+    console.log('Order created with ID:', orderId);
 
     // Create order items using raw SQL
+    console.log('Creating order items...');
     for (const item of items) {
-      await db.execute(`
+      console.log('Creating item:', item);
+      const itemSQL = `
         INSERT INTO pos_order_items (
           "orderId", "productId", quantity, "unitPrice", "subTotal", "createdAt", "updatedAt"
         ) VALUES (
@@ -98,7 +122,9 @@ export async function POST(request: NextRequest) {
           NOW(), 
           NOW()
         )
-      `);
+      `;
+      console.log('Item SQL:', itemSQL);
+      await db.execute(itemSQL);
     }
 
     // Update daily sales
@@ -124,6 +150,7 @@ export async function POST(request: NextRequest) {
         total_revenue = pos_hourly_sales.total_revenue + ${finalAmount}
     `);
 
+    console.log('Order creation completed successfully');
     return NextResponse.json({
       success: true,
       orderNumber: orderNumber,
