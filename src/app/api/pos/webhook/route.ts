@@ -57,8 +57,19 @@ export async function POST(request: NextRequest) {
   if (corsResponse) return corsResponse;
 
   try {
+    console.log('🔔 Webhook received:', {
+      method: request.method,
+      url: request.url,
+      origin: request.headers.get('origin'),
+      userAgent: request.headers.get('user-agent'),
+      contentType: request.headers.get('content-type')
+    });
+    
     const body = await request.json();
+    console.log('📥 Webhook payload:', JSON.stringify(body, null, 2));
+    
     const validatedData = webhookSchema.parse(body);
+    console.log('✅ Webhook validation successful:', validatedData);
     
     const businessDate = getBusinessDate(validatedData.timestamp || new Date().toISOString());
     
@@ -84,6 +95,14 @@ export async function POST(request: NextRequest) {
       businessDate,
       message: `Processed ${validatedData.eventType} for ${validatedData.data.source}`,
     });
+    
+    console.log('📤 Webhook response:', {
+      success: true,
+      event: validatedData.eventType,
+      businessDate,
+      message: `Processed ${validatedData.eventType} for ${validatedData.data.source}`,
+    });
+    
     return addCorsHeaders(response);
     
   } catch (error) {
