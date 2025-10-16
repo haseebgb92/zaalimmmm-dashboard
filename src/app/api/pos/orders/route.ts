@@ -1,40 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromRequest } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { sales } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
+import { posOrders, posOrderItems, posProducts } from '@/lib/db/schema';
+import { eq, desc } from 'drizzle-orm';
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
+export async function GET() {
+  try {
+    const orders = await db
+      .select()
+      .from(posOrders)
+      .orderBy(desc(posOrders.createdAt))
+      .limit(100);
 
-// Helper to determine the correct business date based on 2 AM cutoff
-const getBusinessDate = (timestamp?: string) => {
-  const now = timestamp ? dayjs.tz(timestamp, 'Asia/Karachi') : dayjs().tz('Asia/Karachi');
-  const cutoffTime = now.hour(2).minute(0).second(0).millisecond(0); // 2 AM PST
-
-  // If current time is before 2 AM, it belongs to the previous business day
-  if (now.isBefore(cutoffTime)) {
-    return now.subtract(1, 'day').format('YYYY-MM-DD');
-  }
-  return now.format('YYYY-MM-DD');
-};
-
-export async function POST(request: NextRequest) {
-  const user = getUserFromRequest(request);
-  
-  if (!user || (user.role !== 'pos' && user.role !== 'admin')) {
+    return NextResponse.json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
     return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
+      { error: 'Failed to fetch orders' },
+      { status: 500 }
     );
   }
+}
 
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { items, orderType } = body;
+    const {
+      items,
+      totalAmount,
+      discountAmount = 0,
+      finalAmount,
+      discountType,
+      discount,
+      customerId,
+      riderId,
+      orderType = 'dine-in',
+      customerName,
+      customerPhone,
+      paymentMethod = 'cash',
+      transactionId,
+    } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -43,83 +47,64 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate totals
-    const totalAmount = items.reduce((sum: number, item: { subtotal: number }) => sum + item.subtotal, 0);
-    const orderNumber = `ORD-${Date.now()}`;
+    // Generate order number
+    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
-    // Determine source based on order type
-    const source = orderType === 'delivery' ? 'foodpanda' : 'spot';
-    
-    // Get business date
-    const businessDate = getBusinessDate();
+    // Create order
+    const newOrder = await db.insert(posOrders).values({
+      orderNumber,
+      customerId,
+      riderId,
+      totalAmount: totalAmount.toString(),
+      discountAmount: discountAmount.toString(),
+      finalAmount: finalAmount.toString(),
+      orderType,
+      paymentMethod,
+      transactionId,
+      status: 'completed',
+    }).returning();
 
-    // Check if sales record already exists for this business day and source
-    const existingSales = await db
-      .select()
-      .from(sales)
-      .where(
-        and(
-          eq(sales.date, businessDate),
-          eq(sales.source, source)
-        )
-      )
-      .limit(1);
+    // Create order items
+    const orderItems = await db.insert(posOrderItems).values(
+      items.map((item: any) => ({
+        orderId: newOrder[0].id,
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice.toString(),
+        subTotal: item.subTotal.toString(),
+      }))
+    ).returning();
 
-    if (existingSales.length > 0) {
-      // Update existing record
-      await db
-        .update(sales)
-        .set({
-          orders: (existingSales[0].orders || 0) + 1,
-          grossAmount: ((existingSales[0].grossAmount || 0) + totalAmount).toString(),
-          notes: `Updated via POS - Order #${orderNumber}`,
-        })
-        .where(
-          and(
-            eq(sales.date, businessDate),
-            eq(sales.source, source)
-          )
-        )
-        .returning();
+    // Update daily sales
+    const today = new Date().toISOString().split('T')[0];
+    await db.execute(`
+      INSERT INTO pos_daily_sales (date, total_orders, total_revenue, total_discounts)
+      VALUES ('${today}', 1, ${finalAmount}, ${discountAmount})
+      ON CONFLICT (date) 
+      DO UPDATE SET 
+        total_orders = pos_daily_sales.total_orders + 1,
+        total_revenue = pos_daily_sales.total_revenue + ${finalAmount},
+        total_discounts = pos_daily_sales.total_discounts + ${discountAmount}
+    `);
 
-      console.log(`✅ Updated sales for ${source} on ${businessDate}: +1 order, +PKR ${totalAmount}`);
+    // Update hourly sales
+    const currentHour = new Date().getHours();
+    await db.execute(`
+      INSERT INTO pos_hourly_sales (date, hour, total_orders, total_revenue)
+      VALUES ('${today}', ${currentHour}, 1, ${finalAmount})
+      ON CONFLICT (date, hour) 
+      DO UPDATE SET 
+        total_orders = pos_hourly_sales.total_orders + 1,
+        total_revenue = pos_hourly_sales.total_revenue + ${finalAmount}
+    `);
 
-      return NextResponse.json({
-        success: true,
-        orderNumber,
-        action: 'updated',
-        businessDate,
-        source,
-        totalAmount,
-        message: `Order created and sales updated for ${source}`,
-      });
-    } else {
-      // Create new record
-      await db
-        .insert(sales)
-        .values({
-          date: businessDate,
-          source: source,
-          orders: 1,
-          grossAmount: totalAmount.toString(),
-          notes: `Created via POS - Order #${orderNumber}`,
-        })
-        .returning();
-
-      console.log(`✅ Created new sales record for ${source} on ${businessDate}: 1 order, PKR ${totalAmount}`);
-
-      return NextResponse.json({
-        success: true,
-        orderNumber,
-        action: 'created',
-        businessDate,
-        source,
-        totalAmount,
-        message: `Order created and new sales record created for ${source}`,
-      });
-    }
+    return NextResponse.json({
+      success: true,
+      orderNumber: newOrder[0].orderNumber,
+      orderId: newOrder[0].id,
+    });
   } catch (error) {
-    console.error('POS Order Error:', error);
+    console.error('Error creating order:', error);
     return NextResponse.json(
       { error: 'Failed to create order' },
       { status: 500 }
