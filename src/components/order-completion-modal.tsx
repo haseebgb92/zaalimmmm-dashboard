@@ -113,7 +113,24 @@ Thank you for choosing Zaalimmmm Shawarma! 🙏`
   const printReceipt = async () => {
     setPrinting(true)
     try {
-      const success = await thermalPrinter.printReceipt(orderData)
+      // Convert orderData to match OrderData interface
+      const printData = {
+        orderNumber: orderData.orderNumber,
+        items: orderData.cart.map(item => ({
+          product: {
+            name: item.product.name,
+            price: item.product.price
+          },
+          quantity: item.quantity
+        })),
+        total: orderData.total,
+        customerName: orderData.customerName,
+        orderType: orderData.orderType,
+        paymentMethod: orderData.paymentMethod,
+        discountAmount: 0 // Add discount if needed
+      }
+      
+      const success = await thermalPrinter.printReceipt(printData)
       if (!success) {
         alert('Failed to print receipt. Please check printer connection.')
       }
