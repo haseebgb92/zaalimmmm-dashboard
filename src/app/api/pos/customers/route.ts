@@ -3,19 +3,38 @@ import { db } from '@/lib/db';
 
 export async function GET() {
   try {
-    // Use raw SQL to avoid Drizzle ORM schema issues
+    // Get unique customers by phone number, combining data and calculating total spent
     const customers = await db.execute(`
+      SELECT 
+        MIN(id) as id,
+        name,
+        "phoneNumber",
+        email,
+        address,
+        SUM("totalSpent") as "totalSpent",
+        SUM("loyaltyPoints") as "loyaltyPoints",
+        MIN("createdAt") as "createdAt",
+        MAX("updatedAt") as "updatedAt"
+      FROM pos_customers 
+      WHERE "phoneNumber" IS NOT NULL AND "phoneNumber" != ''
+      GROUP BY "phoneNumber", name, email, address
+      
+      UNION ALL
+      
       SELECT 
         id,
         name,
         "phoneNumber",
         email,
         address,
-        "loyaltyPoints",
         "totalSpent",
+        "loyaltyPoints",
         "createdAt",
         "updatedAt"
-      FROM pos_customers
+      FROM pos_customers 
+      WHERE "phoneNumber" IS NULL OR "phoneNumber" = ''
+      
+      ORDER BY name
     `);
     
     return NextResponse.json(customers);

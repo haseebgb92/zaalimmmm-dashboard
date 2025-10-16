@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PosOrder } from '@/lib/db/schema'
 import OrderDetailsModal from '@/components/order-details-modal'
+import RefundModal from '@/components/refund-modal'
 
 export default function POSOrdersPage() {
   const [orders, setOrders] = useState<PosOrder[]>([])
@@ -12,6 +13,8 @@ export default function POSOrdersPage() {
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all')
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showRefundModal, setShowRefundModal] = useState(false)
+  const [refundOrder, setRefundOrder] = useState<PosOrder | null>(null)
   const router = useRouter()
 
   // Check authentication (only on client side)
@@ -88,6 +91,17 @@ export default function POSOrdersPage() {
   const handleStatusUpdate = () => {
     // Refresh orders list when status is updated
     fetchOrders()
+  }
+
+  const handleRefund = (order: PosOrder) => {
+    setRefundOrder(order)
+    setShowRefundModal(true)
+  }
+
+  const handleRefundSuccess = () => {
+    fetchOrders()
+    setShowRefundModal(false)
+    setRefundOrder(null)
   }
 
   const handleLogout = () => {
@@ -290,6 +304,14 @@ export default function POSOrdersPage() {
                           >
                             View
                           </button>
+                          {(order.status === 'completed' || order.status === 'pending') && (
+                            <button
+                              className="text-red-600 hover:text-red-900 font-medium"
+                              onClick={() => handleRefund(order)}
+                            >
+                              Refund
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -308,6 +330,21 @@ export default function POSOrdersPage() {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           onStatusUpdate={handleStatusUpdate}
+        />
+      )}
+      
+      {/* Refund Modal */}
+      {refundOrder && (
+        <RefundModal
+          isOpen={showRefundModal}
+          onClose={() => {
+            setShowRefundModal(false)
+            setRefundOrder(null)
+          }}
+          orderId={refundOrder.id}
+          orderNumber={refundOrder.orderNumber}
+          orderTotal={Number(refundOrder.finalAmount)}
+          onRefundSuccess={handleRefundSuccess}
         />
       )}
     </div>

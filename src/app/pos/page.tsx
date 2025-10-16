@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { PosProduct } from '@/lib/db/schema'
+import OrderCompletionModal from '@/components/order-completion-modal'
 
 interface CartItem {
   product: PosProduct
@@ -37,6 +38,8 @@ export default function POSPage() {
   const [showCustomerHistory, setShowCustomerHistory] = useState(false)
   const [showOrderActionsModal, setShowOrderActionsModal] = useState(false)
   const [currentOrderData, setCurrentOrderData] = useState<OrderActionsData | null>(null)
+  const [showCompletionModal, setShowCompletionModal] = useState(false)
+  const [completedOrderData, setCompletedOrderData] = useState<any>(null)
 
   const router = useRouter()
 
@@ -252,10 +255,7 @@ export default function POSPage() {
       const result = await response.json()
       
       if (response.ok && result.success) {
-        // Show success message
-        alert(`Order #${result.orderNumber} created successfully!`)
-        
-        // Store order data for action buttons
+        // Store order data for completion modal
         const orderData = {
           orderNumber: result.orderNumber,
           cart: cart,
@@ -263,11 +263,14 @@ export default function POSPage() {
           customerName: customerName,
           customerPhone: customerPhone,
           customerAddress: customerAddress,
-          selectedRider: selectedRider
+          selectedRider: selectedRider?.name || '',
+          orderType: orderType,
+          paymentMethod: paymentMethod
         }
         
-        // Show action buttons
-        showOrderActions(orderData)
+        // Show completion modal
+        setCompletedOrderData(orderData)
+        setShowCompletionModal(true)
         
         clearCart()
       } else {
@@ -1303,6 +1306,18 @@ Thank you for choosing Zaalimmmm!
           </a>
         </div>
       </div>
+      
+      {/* Order Completion Modal */}
+      {completedOrderData && (
+        <OrderCompletionModal
+          isOpen={showCompletionModal}
+          onClose={() => {
+            setShowCompletionModal(false)
+            setCompletedOrderData(null)
+          }}
+          orderData={completedOrderData}
+        />
+      )}
     </div>
     </>
   )

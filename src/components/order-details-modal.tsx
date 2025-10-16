@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Printer, CheckCircle, XCircle } from 'lucide-react'
+import { X, Printer, CheckCircle, XCircle, MessageCircle } from 'lucide-react'
 
 interface OrderItem {
   id: number
@@ -146,6 +146,69 @@ export default function OrderDetailsModal({ orderId, isOpen, onClose, onStatusUp
       printWindow.document.close()
       printWindow.print()
     }
+  }
+
+  const sendWhatsAppToCustomer = () => {
+    if (!order?.customer_phone) return
+    
+    const items = items.map(item => 
+      `• ${item.product_name} x${item.quantity} = ₨${item.subTotal}`
+    ).join('\n')
+    
+    const message = `🍽️ *ORDER UPDATE* 🍽️
+
+📋 *Order #${order.orderNumber}*
+
+📦 *Your Order:*
+${items}
+
+💰 *Total Amount: ₨${order.finalAmount}*
+💳 *Payment: ${order.paymentMethod}*
+
+🚚 *Delivery Details:*
+${order.rider_name ? `Rider: ${order.rider_name}` : 'Rider: TBD'}
+Type: ${order.orderType}
+
+⏰ *Order Time:* ${new Date(order.createdAt).toLocaleString()}
+
+Thank you for choosing Zaalimmmm Shawarma! 🙏`
+    
+    const encodedMessage = encodeURIComponent(message)
+    const whatsappUrl = `https://wa.me/${order.customer_phone.replace(/\D/g, '')}?text=${encodedMessage}`
+    
+    window.open(whatsappUrl, '_blank')
+  }
+
+  const sendWhatsAppToRider = () => {
+    if (!order?.rider_phone) return
+    
+    const items = items.map(item => 
+      `• ${item.product_name} x${item.quantity} = ₨${item.subTotal}`
+    ).join('\n')
+    
+    const message = `🚚 *DELIVERY ORDER* 🚚
+
+📋 *Order #${order.orderNumber}*
+
+👤 *Customer Details:*
+Name: ${order.customer_name || 'N/A'}
+Phone: ${order.customer_phone || 'N/A'}
+Address: ${order.customer_address || 'N/A'}
+
+📦 *Order Items:*
+${items}
+
+💰 *Total Amount: ₨${order.finalAmount}*
+💳 *Payment: ${order.paymentMethod}*
+
+⏰ *Order Time:* ${new Date(order.createdAt).toLocaleString()}
+
+Please confirm pickup and delivery! 🎯`
+    
+    const encodedMessage = encodeURIComponent(message)
+    const whatsappUrl = `https://wa.me/${order.rider_phone.replace(/\D/g, '')}?text=${encodedMessage}`
+    
+    window.open(whatsappUrl, '_blank')
   }
 
   if (!isOpen) return null
@@ -300,6 +363,26 @@ export default function OrderDetailsModal({ orderId, isOpen, onClose, onStatusUp
               <Printer className="h-4 w-4 mr-2" />
               Print Receipt
             </button>
+            
+            {order?.customer_phone && (
+              <button
+                onClick={sendWhatsAppToCustomer}
+                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                <MessageCircle className="h-4 w-4 mr-2" />
+                WhatsApp Customer
+              </button>
+            )}
+            
+            {order?.rider_phone && (
+              <button
+                onClick={sendWhatsAppToRider}
+                className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+              >
+                <MessageCircle className="h-4 w-4 mr-2" />
+                WhatsApp Rider
+              </button>
+            )}
           </div>
           
           <div className="flex space-x-3">
