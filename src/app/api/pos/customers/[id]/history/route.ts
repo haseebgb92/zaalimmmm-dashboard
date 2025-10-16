@@ -33,30 +33,30 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const orderMap = new Map();
     let totalSpent = 0;
     
-    orders.forEach((row: any) => {
-      if (!orderMap.has(row.id)) {
-        orderMap.set(row.id, {
-          id: row.id,
-          orderNumber: row.orderNumber,
-          totalAmount: row.totalAmount,
-          discountAmount: row.discountAmount,
-          finalAmount: row.finalAmount,
-          orderType: row.orderType,
-          paymentMethod: row.paymentMethod,
-          status: row.status,
-          createdAt: row.createdAt,
+    orders.forEach((row: Record<string, unknown>) => {
+      if (!orderMap.has(row.id as number)) {
+        orderMap.set(row.id as number, {
+          id: row.id as number,
+          orderNumber: row.orderNumber as string,
+          totalAmount: row.totalAmount as string,
+          discountAmount: row.discountAmount as string,
+          finalAmount: row.finalAmount as string,
+          orderType: row.orderType as string,
+          paymentMethod: row.paymentMethod as string,
+          status: row.status as string,
+          createdAt: row.createdAt as string,
           items: []
         });
         totalSpent += Number(row.finalAmount);
       }
       
       if (row.product_name) {
-        orderMap.get(row.id).items.push({
-          product_name: row.product_name,
-          product_category: row.product_category,
-          quantity: row.quantity,
-          unitPrice: row.unitPrice,
-          subTotal: row.subTotal
+        orderMap.get(row.id as number)?.items.push({
+          product_name: row.product_name as string,
+          product_category: row.product_category as string,
+          quantity: row.quantity as number,
+          unitPrice: row.unitPrice as string,
+          subTotal: row.subTotal as string
         });
       }
     });

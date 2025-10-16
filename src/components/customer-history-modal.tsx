@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { X, Calendar, DollarSign, Package } from 'lucide-react'
 
 interface OrderItem {
@@ -42,13 +42,7 @@ export default function CustomerHistoryModal({
   const [orderCount, setOrderCount] = useState(0)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (isOpen && customerId) {
-      fetchCustomerHistory()
-    }
-  }, [isOpen, customerId])
-
-  const fetchCustomerHistory = async () => {
+  const fetchCustomerHistory = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fetch(`/api/pos/customers/${customerId}/history`)
@@ -61,7 +55,13 @@ export default function CustomerHistoryModal({
     } finally {
       setLoading(false)
     }
-  }
+  }, [customerId])
+
+  useEffect(() => {
+    if (isOpen && customerId) {
+      fetchCustomerHistory()
+    }
+  }, [isOpen, customerId, fetchCustomerHistory])
 
   if (!isOpen) return null
 
