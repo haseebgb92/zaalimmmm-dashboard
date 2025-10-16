@@ -41,7 +41,16 @@ dayjs.extend(isSameOrBefore);
 export async function GET(request: NextRequest) {
   // Handle CORS preflight
   const corsResponse = handleCors(request);
-  if (corsResponse) return corsResponse;
+  if (corsResponse) {
+    console.log('CORS preflight handled');
+    return corsResponse;
+  }
+
+  console.log('Summary API called:', {
+    method: request.method,
+    origin: request.headers.get('origin'),
+    url: request.url,
+  });
 
   try {
     const { searchParams } = new URL(request.url);

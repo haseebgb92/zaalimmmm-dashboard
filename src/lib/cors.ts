@@ -21,8 +21,10 @@ export function handleCors(request: Request) {
 
 // Add CORS headers to response
 export function addCorsHeaders(response: NextResponse) {
+  console.log('Adding CORS headers:', corsHeaders);
   Object.entries(corsHeaders).forEach(([key, value]) => {
     response.headers.set(key, value);
   });
+  console.log('Response headers after CORS:', Object.fromEntries(response.headers.entries()));
   return response;
 }
