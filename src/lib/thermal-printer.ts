@@ -1,5 +1,28 @@
 // Thermal Printer Utility for POS System
 
+// WebUSB API type declarations
+declare global {
+  interface Navigator {
+    usb?: {
+      getDevices(): Promise<USBDevice[]>;
+      requestDevice(options: { filters: USBDeviceFilter[] }): Promise<USBDevice>;
+    };
+  }
+}
+
+interface USBDevice {
+  productName?: string;
+  manufacturerName?: string;
+  open(): Promise<void>;
+  selectConfiguration(configurationValue: number): Promise<void>;
+  claimInterface(interfaceNumber: number): Promise<void>;
+}
+
+interface USBDeviceFilter {
+  classCode?: number;
+  vendorId?: number;
+}
+
 interface OrderItem {
   product: {
     name: string;
@@ -138,7 +161,7 @@ ITEMS:
 ${items}
 --------------------------------
 
-${orderData.discountAmount > 0 ? `Discount: -₨${orderData.discountAmount}\n` : ''}
+${orderData.discountAmount && orderData.discountAmount > 0 ? `Discount: -₨${orderData.discountAmount}\n` : ''}
 TOTAL: ₨${orderData.total.toFixed(2)}
 
 Thank you for choosing Zaalimmmm!
