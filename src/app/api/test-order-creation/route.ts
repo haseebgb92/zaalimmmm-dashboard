@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Test order creation with minimal data
     const testOrder = await db.execute(`

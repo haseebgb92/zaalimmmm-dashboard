@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -63,9 +63,9 @@ export default function AnalyticsPage() {
       // Load analytics data
       fetchAnalyticsData()
     }
-  }, [router])
+  }, [router, fetchAnalyticsData])
 
-  const fetchAnalyticsData = async (filter = selectedFilter) => {
+  const fetchAnalyticsData = useCallback(async (filter = selectedFilter) => {
     try {
       setLoading(true)
       const url = `/api/pos/dashboard?filter=${filter}`
@@ -80,7 +80,7 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedFilter])
 
   const formatCurrency = (amount: number) => {
     return `₨${amount.toFixed(2)}`

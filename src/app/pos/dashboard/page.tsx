@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -64,12 +64,12 @@ export default function POSDashboardPage() {
       // Load dashboard data
       fetchDashboardData()
       // Update every 30 seconds
-      const interval = setInterval(fetchDashboardData, 30000)
+      const interval = setInterval(() => fetchDashboardData(), 30000)
       return () => clearInterval(interval)
     }
-  }, [router])
+  }, [router, fetchDashboardData])
 
-  const fetchDashboardData = async (filter = selectedFilter) => {
+  const fetchDashboardData = useCallback(async (filter = selectedFilter) => {
     try {
       setLoading(true)
       const url = filter === 'custom' ? 
@@ -87,7 +87,7 @@ export default function POSDashboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedFilter])
 
   const formatCurrency = (amount: number) => {
     return `₨${amount.toFixed(2)}`
@@ -138,7 +138,7 @@ export default function POSDashboardPage() {
                 Last updated: {lastUpdated.toLocaleTimeString()}
               </div>
               <button
-                onClick={fetchDashboardData}
+                onClick={() => fetchDashboardData()}
                 className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
