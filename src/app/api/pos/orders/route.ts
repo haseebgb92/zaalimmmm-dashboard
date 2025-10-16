@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { items, customerName, orderType, paymentMethod } = body;
+    const { items, orderType } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate totals
-    const totalAmount = items.reduce((sum: number, item: any) => sum + item.subtotal, 0);
+    const totalAmount = items.reduce((sum: number, item: { subtotal: number }) => sum + item.subtotal, 0);
     const orderNumber = `ORD-${Date.now()}`;
 
     // Determine source based on order type
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     if (existingSales.length > 0) {
       // Update existing record
-      const updatedSales = await db
+      await db
         .update(sales)
         .set({
           orders: (existingSales[0].orders || 0) + 1,
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       });
     } else {
       // Create new record
-      const newSales = await db
+      await db
         .insert(sales)
         .values({
           date: businessDate,

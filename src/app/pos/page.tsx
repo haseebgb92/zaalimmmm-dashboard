@@ -134,7 +134,7 @@ export default function POSPage() {
         const error = await response.json();
         alert(`Error: ${error.error}`);
       }
-    } catch (error) {
+    } catch {
       alert('Network error. Please try again.');
     } finally {
       setLoading(false);
@@ -215,7 +215,7 @@ export default function POSPage() {
                 </label>
                 <select
                   value={orderType}
-                  onChange={(e) => setOrderType(e.target.value as any)}
+                  onChange={(e) => setOrderType(e.target.value as 'dine-in' | 'takeaway' | 'delivery')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="dine-in">Dine In</option>
@@ -230,7 +230,7 @@ export default function POSPage() {
                 </label>
                 <select
                   value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value as any)}
+                  onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'card')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="cash">Cash</option>

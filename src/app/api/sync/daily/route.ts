@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { sales } from '@/lib/db/schema';
-import { eq, and, gte, lte } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -9,7 +9,7 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Get yesterday's business date (since we run at midnight)
     const yesterday = dayjs().tz('Asia/Karachi').subtract(1, 'day').format('YYYY-MM-DD');
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Get yesterday's business date
     const yesterday = dayjs().tz('Asia/Karachi').subtract(1, 'day').format('YYYY-MM-DD');
