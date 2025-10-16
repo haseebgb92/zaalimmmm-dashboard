@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { posOrders, posOrderItems, posProducts } from '@/lib/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { posOrders, posOrderItems } from '@/lib/db/schema';
+import { desc } from 'drizzle-orm';
 
 export async function GET() {
   try {
@@ -29,13 +29,9 @@ export async function POST(request: NextRequest) {
       totalAmount,
       discountAmount = 0,
       finalAmount,
-      discountType,
-      discount,
       customerId,
       riderId,
       orderType = 'dine-in',
-      customerName,
-      customerPhone,
       paymentMethod = 'cash',
       transactionId,
     } = body;
@@ -65,8 +61,8 @@ export async function POST(request: NextRequest) {
     }).returning();
 
     // Create order items
-    const orderItems = await db.insert(posOrderItems).values(
-      items.map((item: any) => ({
+    await db.insert(posOrderItems).values(
+      items.map((item: {productId: number; quantity: number; unitPrice: number; subTotal: number}) => ({
         orderId: newOrder[0].id,
         productId: item.productId,
         quantity: item.quantity,

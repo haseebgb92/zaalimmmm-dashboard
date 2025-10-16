@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { posOrders, posDailySales, posHourlySales } from '@/lib/db/schema';
-import { eq, gte, and } from 'drizzle-orm';
+import { posOrders } from '@/lib/db/schema';
+import { gte } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    const today = new Date().toISOString().split('T')[0];
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 

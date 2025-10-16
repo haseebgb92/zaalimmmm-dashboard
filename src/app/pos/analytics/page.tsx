@@ -80,7 +80,7 @@ export default function POSAnalyticsPage() {
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Analytics Coming Soon!</h2>
           <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
-            We're working on comprehensive analytics and reporting features for your POS system. 
+            We&apos;re working on comprehensive analytics and reporting features for your POS system. 
             This will include detailed sales reports, customer insights, product performance, and more.
           </p>
           

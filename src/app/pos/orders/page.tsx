@@ -167,7 +167,7 @@ export default function POSOrdersPage() {
             ].map(filterOption => (
               <button
                 key={filterOption.key}
-                onClick={() => setFilter(filterOption.key as any)}
+                onClick={() => setFilter(filterOption.key as 'all' | 'pending' | 'completed' | 'cancelled')}
                 className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 ${
                   filter === filterOption.key
                     ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'

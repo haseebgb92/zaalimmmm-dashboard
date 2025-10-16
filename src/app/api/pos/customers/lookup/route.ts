@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { posCustomers, posOrders, posOrderItems, posProducts } from '@/lib/db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       .limit(10);
 
     // Group order items by order
-    const groupedHistory = history.reduce((acc: any[], row) => {
+    const groupedHistory = history.reduce((acc: Array<{orderNumber: string; createdAt: Date; finalAmount: string; orderType: string; orderItems: Array<{quantity: number; product: {id: number; name: string}}>}>, row) => {
       const existingOrder = acc.find(order => order.orderNumber === row.orderNumber);
       
       if (existingOrder) {

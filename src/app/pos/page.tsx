@@ -28,7 +28,7 @@ export default function POSPage() {
   const [showCartModal, setShowCartModal] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'jazzcash' | 'easypaisa'>('cash')
   const [transactionId, setTransactionId] = useState('')
-  const [appliedCoupon] = useState<{code: string, discount: number, type: string} | null>(null)
+  // const [appliedCoupon] = useState<{code: string, discount: number, type: string} | null>(null)
   interface HistoryItemProduct { id: number; name: string }
   interface HistoryItem { quantity: number; product?: HistoryItemProduct }
   interface HistoryOrder { orderNumber: string; createdAt: string; finalAmount: number; orderType: string; orderItems?: HistoryItem[] }

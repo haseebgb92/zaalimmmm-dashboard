@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, Image, X, Upload } from "lucide-react";
+import NextImage from "next/image";
 import { toast } from "sonner";
 
 interface ReceiptPickerProps {
@@ -62,9 +63,11 @@ export function ReceiptPicker({ onReceiptSelect, currentReceiptUrl, onRemoveRece
       {/* Current Receipt Display */}
       {currentReceiptUrl && (
         <div className="relative inline-block">
-          <img
+          <NextImage
             src={currentReceiptUrl}
             alt="Receipt"
+            width={80}
+            height={80}
             className="h-20 w-20 object-cover rounded-lg border border-border"
           />
           <Button
