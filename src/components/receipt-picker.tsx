@@ -113,7 +113,7 @@ export function ReceiptPicker({ onReceiptSelect, currentReceiptUrl, onRemoveRece
                 onClick={openGallery}
                 className="w-full justify-start"
               >
-                <Image className="h-4 w-4 mr-2" />
+                <Image className="h-4 w-4 mr-2" alt="" />
                 Choose from Gallery
               </Button>
               {currentReceiptUrl && (
