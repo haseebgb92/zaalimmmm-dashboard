@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = webhookSchema.parse(body);
     
-    const businessDate = getBusinessDate(validatedData.timestamp);
+    const businessDate = getBusinessDate(validatedData.timestamp || new Date().toISOString());
     
     // Handle different webhook events
     switch (validatedData.eventType) {
