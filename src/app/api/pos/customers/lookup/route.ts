@@ -55,16 +55,19 @@ export async function GET(request: NextRequest) {
     `);
 
     // Group order items by order
-    const groupedHistory = history.reduce((acc: Array<{orderNumber: string; createdAt: Date; finalAmount: string; orderType: string; orderItems: Array<{quantity: number; product: {id: number; name: string}}>}>, row) => {
-      const existingOrder = acc.find(order => order.orderNumber === row.orderNumber);
+    const groupedHistory = history.reduce((acc: Array<Record<string, unknown>>, row: Record<string, unknown>) => {
+      const orderNumber = row.orderNumber as string;
+      const existingOrder = acc.find((order: Record<string, unknown>) => order.orderNumber === orderNumber);
       
       if (existingOrder) {
-        if (row.orderItems && row.product) {
-          existingOrder.orderItems.push({
-            quantity: row.orderItems.quantity,
+        if (row.quantity && row.product_name) {
+          (existingOrder.orderItems as Array<Record<string, unknown>>).push({
+            quantity: row.quantity,
+            unitPrice: row.unitPrice,
+            subTotal: row.subTotal,
             product: {
-              id: row.product.id,
-              name: row.product.name,
+              name: row.product_name,
+              category: row.product_category,
             }
           });
         }
@@ -74,11 +77,13 @@ export async function GET(request: NextRequest) {
           createdAt: row.createdAt,
           finalAmount: row.finalAmount,
           orderType: row.orderType,
-          orderItems: row.orderItems && row.product ? [{
-            quantity: row.orderItems.quantity,
+          orderItems: row.quantity && row.product_name ? [{
+            quantity: row.quantity,
+            unitPrice: row.unitPrice,
+            subTotal: row.subTotal,
             product: {
-              id: row.product.id,
-              name: row.product.name,
+              name: row.product_name,
+              category: row.product_category,
             }
           }] : []
         });

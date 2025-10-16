@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { posCustomers } from '@/lib/db/schema';
 
 export async function GET() {
   try {

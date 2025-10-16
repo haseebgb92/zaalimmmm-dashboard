@@ -152,9 +152,9 @@ export async function GET(request: NextRequest) {
     }));
 
     const stats = {
-      todayOrders: todayOrdersCount,
-      todayRevenue,
-      todayDiscounts,
+      ordersCount,
+      totalRevenue,
+      totalDiscounts,
       averageOrderValue,
       peakHour: peakHour.hour,
       peakHourOrders: peakHour.orders,
@@ -164,6 +164,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       stats,
       hourlyData,
+      topItems,
+      dateRange: {
+        start: startDate.toISOString(),
+        end: endDate.toISOString(),
+        filter: dateFilter
+      }
     });
   } catch (error) {
     console.error('Error fetching dashboard data:', error);

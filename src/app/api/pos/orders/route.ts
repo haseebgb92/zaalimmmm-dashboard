@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { posOrders, posOrderItems } from '@/lib/db/schema';
 
 export async function GET() {
   try {
