@@ -26,6 +26,7 @@ interface HourlyData {
 }
 
 interface TopItem {
+  id?: number
   name: string
   category: string
   price: string
