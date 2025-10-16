@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Order Test</title>
+</head>
+<body>
+    <h1>Quick Order Creation Test</h1>
+    
+    <button onclick="testOrder()">Test Order Creation</button>
+    <button onclick="testSimpleOrder()">Test Simple Order</button>
+    <button onclick="testDatabase()">Test Database</button>
+    
+    <div id="result" style="background: #f0f0f0; padding: 20px; margin: 20px 0; white-space: pre-wrap;"></div>
+
+    <script>
+        async function testDatabase() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing database...';
+            
+            try {
+                const response = await fetch('https://zaalimmmm-dashboard-omega.vercel.app/api/check-orders-schema');
+                const data = await response.json();
+                resultDiv.innerHTML = 'Database Test:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.innerHTML = 'Database Error: ' + error.message;
+            }
+        }
+
+        async function testOrder() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing original order creation...';
+            
+            try {
+                const orderData = {
+                    items: [
+                        {
+                            productId: 1,
+                            quantity: 1,
+                            unitPrice: 300,
+                            subTotal: 300
+                        }
+                    ],
+                    totalAmount: 300,
+                    discountAmount: 0,
+                    finalAmount: 300,
+                    orderType: 'takeaway',
+                    paymentMethod: 'cash'
+                };
+
+                const response = await fetch('https://zaalimmmm-dashboard-omega.vercel.app/api/pos/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `Original API (Status: ${response.status}):\n` + JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.innerHTML = 'Original API Error: ' + error.message;
+            }
+        }
+
+        async function testSimpleOrder() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing simple order creation...';
+            
+            try {
+                const orderData = {
+                    items: [
+                        {
+                            productId: 1,
+                            quantity: 1,
+                            unitPrice: 300,
+                            subTotal: 300
+                        }
+                    ],
+                    totalAmount: 300,
+                    finalAmount: 300,
+                    orderType: 'takeaway',
+                    paymentMethod: 'cash'
+                };
+
+                const response = await fetch('https://zaalimmmm-dashboard-omega.vercel.app/api/pos/orders-simple', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `Simple API (Status: ${response.status}):\n` + JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.innerHTML = 'Simple API Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
