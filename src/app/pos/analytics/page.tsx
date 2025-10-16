@@ -47,6 +47,8 @@ export default function AnalyticsPage() {
   const [dateRange, setDateRange] = useState<DateRange | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedFilter, setSelectedFilter] = useState('thisWeek')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
   const router = useRouter()
 
   const fetchAnalyticsData = useCallback(async (filter = selectedFilter) => {
@@ -247,13 +249,18 @@ export default function AnalyticsPage() {
         {/* Top Selling Items */}
         {topItems.length > 0 && (
           <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <span className="w-6 h-6 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mr-2">
-                <span className="text-white text-xs">🏆</span>
-              </span>
-              Top Selling Items
-            </h3>
-            <div className="overflow-x-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <span className="w-6 h-6 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mr-2">
+                  <span className="text-white text-xs">🏆</span>
+                </span>
+                Top Selling Items ({topItems.length} total)
+              </h3>
+              <div className="text-sm text-gray-500">
+                Showing {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, topItems.length)} of {topItems.length}
+              </div>
+            </div>
+            <div className="overflow-x-auto mb-4">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
@@ -266,23 +273,61 @@ export default function AnalyticsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {topItems.map((item, index) => (
-                    <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4">
-                        <span className="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full text-sm font-bold">
-                          {index + 1}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 font-medium text-gray-800">{item.name}</td>
-                      <td className="py-3 px-4 text-gray-600">{item.category}</td>
-                      <td className="py-3 px-4 text-right font-semibold text-green-600">{item.total_quantity}</td>
-                      <td className="py-3 px-4 text-right font-semibold text-blue-600">{formatCurrency(item.total_amount)}</td>
-                      <td className="py-3 px-4 text-right text-gray-600">{item.order_count}</td>
-                    </tr>
-                  ))}
+                  {topItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item, index) => {
+                    const globalIndex = (currentPage - 1) * itemsPerPage + index;
+                    return (
+                      <tr key={item.id || index} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4">
+                          <span className="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full text-sm font-bold">
+                            {globalIndex + 1}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-medium text-gray-800">{item.name}</td>
+                        <td className="py-3 px-4 text-gray-600">{item.category}</td>
+                        <td className="py-3 px-4 text-right font-semibold text-green-600">{item.total_quantity}</td>
+                        <td className="py-3 px-4 text-right font-semibold text-blue-600">{formatCurrency(item.total_amount)}</td>
+                        <td className="py-3 px-4 text-right text-gray-600">{item.order_count}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
+            
+            {/* Pagination */}
+            {topItems.length > itemsPerPage && (
+              <div className="flex justify-center items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                
+                {Array.from({ length: Math.ceil(topItems.length / itemsPerPage) }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1 rounded-lg ${
+                      currentPage === page
+                        ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(Math.ceil(topItems.length / itemsPerPage), prev + 1))}
+                  disabled={currentPage === Math.ceil(topItems.length / itemsPerPage)}
+                  className="px-3 py-1 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         )}
 

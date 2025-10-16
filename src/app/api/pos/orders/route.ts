@@ -60,22 +60,22 @@ export async function POST(request: NextRequest) {
     // Generate order number
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
-    // Create order using raw SQL
+    // Create order using raw SQL with proper escaping
     const newOrder = await db.execute(`
       INSERT INTO pos_orders (
         "orderNumber", "customerId", "riderId", "totalAmount", 
         "discountAmount", "finalAmount", "orderType", "paymentMethod", 
         "transactionId", status, "createdAt", "updatedAt"
       ) VALUES (
-        '${orderNumber}', 
+        '${orderNumber.replace(/'/g, "\'")}', 
         ${customerId || 'NULL'}, 
         ${riderId || 'NULL'}, 
         '${totalAmount.toString()}', 
         '${discountAmount.toString()}', 
         '${finalAmount.toString()}', 
-        '${orderType}', 
-        '${paymentMethod}', 
-        ${transactionId ? `'${transactionId}'` : 'NULL'}, 
+        '${orderType.replace(/'/g, "\'")}', 
+        '${paymentMethod.replace(/'/g, "\'")}', 
+        ${transactionId ? `'${transactionId.replace(/'/g, "\'")}'` : 'NULL'}, 
         'completed', 
         NOW(), 
         NOW()
@@ -132,7 +132,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating order:', error);
     return NextResponse.json(
-      { error: 'Failed to create order' },
+      { 
+        error: 'Failed to create order',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

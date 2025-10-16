@@ -48,6 +48,8 @@ export default function POSDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   const [selectedFilter, setSelectedFilter] = useState('thisWeek')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6
   const router = useRouter()
 
   const fetchDashboardData = useCallback(async (filter = selectedFilter) => {
@@ -265,28 +267,71 @@ export default function POSDashboardPage() {
         {/* Top Selling Items */}
         {topItems.length > 0 && (
           <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <span className="w-6 h-6 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mr-2">
-                <span className="text-white text-xs">🏆</span>
-              </span>
-              Top Selling Items
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {topItems.slice(0, 6).map((item, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-gray-800">{item.name}</h4>
-                    <span className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">#{index + 1}</span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">{item.category}</p>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-green-600 font-medium">Qty: {item.total_quantity}</span>
-                    <span className="text-blue-600 font-medium">₨{item.total_amount}</span>
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">{item.order_count} orders</div>
-                </div>
-              ))}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <span className="w-6 h-6 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mr-2">
+                  <span className="text-white text-xs">🏆</span>
+                </span>
+                Top Selling Items ({topItems.length} total)
+              </h3>
+              <div className="text-sm text-gray-500">
+                Showing {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, topItems.length)} of {topItems.length}
+              </div>
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              {topItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item, index) => {
+                const globalIndex = (currentPage - 1) * itemsPerPage + index;
+                return (
+                  <div key={item.id || index} className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-gray-800">{item.name}</h4>
+                      <span className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">#{globalIndex + 1}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">{item.category}</p>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-green-600 font-medium">Qty: {item.total_quantity}</span>
+                      <span className="text-blue-600 font-medium">₨{item.total_amount}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">{item.order_count} orders</div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Pagination */}
+            {topItems.length > itemsPerPage && (
+              <div className="flex justify-center items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                
+                {Array.from({ length: Math.ceil(topItems.length / itemsPerPage) }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1 rounded-lg ${
+                      currentPage === page
+                        ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(Math.ceil(topItems.length / itemsPerPage), prev + 1))}
+                  disabled={currentPage === Math.ceil(topItems.length / itemsPerPage)}
+                  className="px-3 py-1 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         )}
 
