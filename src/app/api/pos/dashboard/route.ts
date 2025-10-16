@@ -24,8 +24,8 @@ export async function GET() {
         "createdAt",
         "updatedAt"
       FROM pos_orders 
-      WHERE "createdAt" >= $1
-    `, [startOfDay]);
+      WHERE "createdAt" >= '${startOfDay.toISOString()}'
+    `);
 
     // Calculate stats
     const todayOrdersCount = todayOrders.length;
