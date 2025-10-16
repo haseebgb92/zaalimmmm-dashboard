@@ -6,28 +6,32 @@ import { z } from 'zod';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { handleCors, addCorsHeaders } from '@/lib/cors';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 // Webhook payload schema
 const webhookSchema = z.object({
-  event: z.enum(['order_created', 'order_updated', 'order_cancelled', 'daily_summary']),
+  eventType: z.enum(['order_created', 'order_updated', 'order_cancelled', 'daily_summary']),
+  timestamp: z.string().optional(),
   data: z.object({
     source: z.enum(['spot', 'foodpanda']),
     orders: z.number().min(0),
     grossAmount: z.number().min(0),
-    timestamp: z.string(),
     orderId: z.string().optional(),
+    orderType: z.string().optional(),
+    paymentMethod: z.string().optional(),
+    items: z.array(z.object({
+      productId: z.string(),
+      quantity: z.number(),
+      unitPrice: z.number(),
+      subTotal: z.number()
+    })).optional(),
     customerInfo: z.object({
       name: z.string().optional(),
       phone: z.string().optional(),
     }).optional(),
-    items: z.array(z.object({
-      name: z.string(),
-      quantity: z.number(),
-      price: z.number(),
-    })).optional(),
   }),
   posId: z.string().optional(),
   signature: z.string().optional(), // For webhook verification
@@ -48,6 +52,10 @@ function getBusinessDate(timestamp: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  // Handle CORS preflight
+  const corsResponse = handleCors(request);
+  if (corsResponse) return corsResponse;
+
   try {
     const body = await request.json();
     const validatedData = webhookSchema.parse(body);
@@ -55,7 +63,7 @@ export async function POST(request: NextRequest) {
     const businessDate = getBusinessDate(validatedData.data.timestamp);
     
     // Handle different webhook events
-    switch (validatedData.event) {
+    switch (validatedData.eventType) {
       case 'order_created':
       case 'order_updated':
         await handleOrderEvent(businessDate, validatedData.data, 'add');
@@ -70,28 +78,31 @@ export async function POST(request: NextRequest) {
         break;
     }
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
-      event: validatedData.event,
+      event: validatedData.eventType,
       businessDate,
-      message: `Processed ${validatedData.event} for ${validatedData.data.source}`,
+      message: `Processed ${validatedData.eventType} for ${validatedData.data.source}`,
     });
+    return addCorsHeaders(response);
     
   } catch (error) {
     console.error('POS Webhook Error:', error);
     
     if (error instanceof z.ZodError) {
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: false,
         error: 'Validation error',
         details: error.issues,
       }, { status: 400 });
+      return addCorsHeaders(response);
     }
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: false,
       error: 'Internal server error',
     }, { status: 500 });
+    return addCorsHeaders(response);
   }
 }
 
