@@ -1,4 +1,23 @@
 // Thermal Printer Utility for POS System
+
+interface OrderItem {
+  product: {
+    name: string;
+    price: string | number;
+  };
+  quantity: number;
+}
+
+interface OrderData {
+  orderNumber: string;
+  items: OrderItem[];
+  total: number;
+  customerName: string;
+  orderType: string;
+  paymentMethod: string;
+  discountAmount?: number;
+}
+
 export class ThermalPrinter {
   private static instance: ThermalPrinter;
   private isConnected = false;
@@ -74,18 +93,7 @@ export class ThermalPrinter {
   }
 
   // Print thermal receipt
-  async printReceipt(orderData: {
-    orderNumber: string;
-    items: Array<{
-      product: { name: string; category: string };
-      quantity: number;
-    }>;
-    total: number;
-    customerName: string;
-    orderType: string;
-    paymentMethod: string;
-    discountAmount?: number;
-  }): Promise<boolean> {
+  async printReceipt(orderData: OrderData): Promise<boolean> {
     try {
       if (!this.isConnected) {
         const connected = await this.connectToPrinter();
@@ -109,8 +117,8 @@ export class ThermalPrinter {
   }
 
   // Generate thermal receipt content
-  private generateThermalReceipt(orderData: any): string {
-    const items = orderData.items.map((item: any) => 
+  private generateThermalReceipt(orderData: OrderData): string {
+    const items = orderData.items.map((item: OrderItem) => 
       `${item.quantity}x ${item.product.name} - ₨${(Number(item.product.price) * item.quantity).toFixed(2)}`
     ).join('\n');
 
