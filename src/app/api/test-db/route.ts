@@ -14,7 +14,7 @@ export async function GET() {
       AND table_name LIKE 'pos_%'
     `);
     
-    const existingTables = tablesCheck.rows.map((row: { table_name: string }) => row.table_name);
+    const existingTables = tablesCheck.map((row: { table_name: string }) => row.table_name);
     
     return NextResponse.json({
       success: true,
