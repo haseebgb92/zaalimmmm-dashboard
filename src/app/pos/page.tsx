@@ -249,9 +249,9 @@ export default function POSPage() {
         body: JSON.stringify(orderData)
       })
 
-      if (response.ok) {
-        const result = await response.json()
-        
+      const result = await response.json()
+      
+      if (response.ok && result.success) {
         // Show success message
         alert(`Order #${result.orderNumber} created successfully!`)
         
@@ -271,7 +271,8 @@ export default function POSPage() {
         
         clearCart()
       } else {
-        throw new Error('Failed to create order')
+        console.error('Order creation failed:', result)
+        throw new Error(result.error || 'Failed to create order')
       }
     } catch (error) {
       console.error('Error creating order:', error)

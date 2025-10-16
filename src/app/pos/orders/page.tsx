@@ -4,11 +4,14 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PosOrder } from '@/lib/db/schema'
+import OrderDetailsModal from '@/components/order-details-modal'
 
 export default function POSOrdersPage() {
   const [orders, setOrders] = useState<PosOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all')
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const router = useRouter()
 
   // Check authentication (only on client side)
@@ -70,6 +73,21 @@ export default function POSOrdersPage() {
       default:
         return 'bg-gray-100 text-gray-800'
     }
+  }
+
+  const handleViewOrder = (orderId: number) => {
+    setSelectedOrderId(orderId)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedOrderId(null)
+  }
+
+  const handleStatusUpdate = () => {
+    // Refresh orders list when status is updated
+    fetchOrders()
   }
 
   const handleLogout = () => {
@@ -268,24 +286,10 @@ export default function POSOrdersPage() {
                         <div className="flex space-x-2">
                           <button
                             className="text-blue-600 hover:text-blue-900 font-medium"
-                            onClick={() => {
-                              // TODO: Implement view order details
-                              alert('View order details - Coming soon!')
-                            }}
+                            onClick={() => handleViewOrder(order.id)}
                           >
                             View
                           </button>
-                          {order.status === 'pending' && (
-                            <button
-                              className="text-green-600 hover:text-green-900 font-medium"
-                              onClick={() => {
-                                // TODO: Implement complete order
-                                alert('Complete order - Coming soon!')
-                              }}
-                            >
-                              Complete
-                            </button>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -296,6 +300,16 @@ export default function POSOrdersPage() {
           )}
         </div>
       </div>
+      
+      {/* Order Details Modal */}
+      {selectedOrderId && (
+        <OrderDetailsModal
+          orderId={selectedOrderId}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onStatusUpdate={handleStatusUpdate}
+        />
+      )}
     </div>
   )
 }
