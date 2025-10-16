@@ -62,14 +62,16 @@ export default function Dashboard() {
   const [currency, setCurrency] = useState('PKR');
   const router = useRouter();
 
-  // Check authentication
+  // Check authentication (only on client side)
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const role = localStorage.getItem('userRole');
-    
-    if (!token || (role !== 'dashboard' && role !== 'admin')) {
-      router.push('/login');
-      return;
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('authToken');
+      const role = localStorage.getItem('userRole');
+      
+      if (!token || (role !== 'dashboard' && role !== 'admin')) {
+        router.push('/login');
+        return;
+      }
     }
   }, [router]);
 

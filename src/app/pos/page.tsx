@@ -28,17 +28,19 @@ export default function POSPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem('authToken');
-    const role = localStorage.getItem('userRole');
-    
-    if (!token || role !== 'pos') {
-      router.push('/login');
-      return;
-    }
+    // Check authentication (only on client side)
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('authToken');
+      const role = localStorage.getItem('userRole');
+      
+      if (!token || role !== 'pos') {
+        router.push('/login');
+        return;
+      }
 
-    // Load products
-    loadProducts();
+      // Load products
+      loadProducts();
+    }
   }, [router]);
 
   const loadProducts = async () => {
@@ -113,7 +115,7 @@ export default function POSPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('authToken') : ''}`,
         },
         body: JSON.stringify({
           items: orderItems,
@@ -157,7 +159,7 @@ export default function POSPage() {
             <h1 className="text-2xl font-bold text-gray-900">Zaalimmmm POS</h1>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
-                Welcome, {localStorage.getItem('userName')}
+                Welcome, {typeof window !== 'undefined' ? localStorage.getItem('userName') : 'User'}
               </span>
               <button
                 onClick={handleLogout}
