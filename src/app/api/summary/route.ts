@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import { handleCors, addCorsHeaders } from '@/lib/cors';
 
 // Seasonal multiplier function for expense forecasting
 function getSeasonalMultiplier(item: string, month: number): number {
@@ -38,6 +39,10 @@ dayjs.extend(timezone);
 dayjs.extend(isSameOrBefore);
 
 export async function GET(request: NextRequest) {
+  // Handle CORS preflight
+  const corsResponse = handleCors(request);
+  if (corsResponse) return corsResponse;
+
   try {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('start');
@@ -252,7 +257,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       kpis: {
         grossSalesTotal,
         foodpandaProfitTotal,
@@ -274,8 +279,11 @@ export async function GET(request: NextRequest) {
       expensesByItem,
       expenseForecast,
     });
+    
+    return addCorsHeaders(response);
   } catch (error) {
     console.error('Error fetching summary:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return addCorsHeaders(response);
   }
 }

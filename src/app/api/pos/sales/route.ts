@@ -6,6 +6,7 @@ import { z } from 'zod';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { handleCors, addCorsHeaders } from '@/lib/cors';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -39,6 +40,10 @@ function getBusinessDate(timestamp?: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  // Handle CORS preflight
+  const corsResponse = handleCors(request);
+  if (corsResponse) return corsResponse;
+
   try {
     const body = await request.json();
     const validatedData = posSalesSchema.parse(body);
@@ -70,13 +75,14 @@ export async function POST(request: NextRequest) {
         .where(eq(sales.id, existingSales[0].id))
         .returning();
       
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: true,
         action: 'updated',
         data: updatedSales[0],
         businessDate,
         message: `Updated sales for ${validatedData.source} on ${businessDate}`,
       });
+      return addCorsHeaders(response);
     } else {
       // Create new record
       const newSales = await db
@@ -90,35 +96,42 @@ export async function POST(request: NextRequest) {
         })
         .returning();
       
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: true,
         action: 'created',
         data: newSales[0],
         businessDate,
         message: `Created new sales record for ${validatedData.source} on ${businessDate}`,
       });
+      return addCorsHeaders(response);
     }
   } catch (error) {
     console.error('POS Sales API Error:', error);
     
     if (error instanceof z.ZodError) {
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: false,
         error: 'Validation error',
         details: error.issues,
       }, { status: 400 });
+      return addCorsHeaders(response);
     }
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: false,
       error: 'Internal server error',
       message: 'Failed to process POS sales data',
     }, { status: 500 });
+    return addCorsHeaders(response);
   }
 }
 
 // GET endpoint to retrieve current business day sales
 export async function GET(request: NextRequest) {
+  // Handle CORS preflight
+  const corsResponse = handleCors(request);
+  if (corsResponse) return corsResponse;
+
   try {
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date');
@@ -131,16 +144,18 @@ export async function GET(request: NextRequest) {
       .where(eq(sales.date, businessDate))
       .orderBy(sales.source);
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       businessDate,
       data: salesData,
     });
+    return addCorsHeaders(response);
   } catch (error) {
     console.error('POS Sales GET Error:', error);
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: false,
       error: 'Failed to retrieve sales data',
     }, { status: 500 });
+    return addCorsHeaders(response);
   }
 }
