@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PosCustomer } from '@/lib/db/schema'
+import CustomerHistoryModal from '@/components/customer-history-modal'
 
 export default function POSCustomersPage() {
   const [customers, setCustomers] = useState<PosCustomer[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState<PosCustomer | null>(null)
+  const [showHistoryModal, setShowHistoryModal] = useState(false)
+  const [selectedCustomer, setSelectedCustomer] = useState<PosCustomer | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     phoneNumber: '',
@@ -68,6 +71,11 @@ export default function POSCustomersPage() {
       address: customer.address || ''
     })
     setShowModal(true)
+  }
+
+  const openHistoryModal = (customer: PosCustomer) => {
+    setSelectedCustomer(customer)
+    setShowHistoryModal(true)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -262,10 +270,7 @@ export default function POSCustomersPage() {
                           </button>
                           <button
                             className="text-green-600 hover:text-green-900 font-medium"
-                            onClick={() => {
-                              // TODO: Implement view customer history
-                              alert('View customer history - Coming soon!')
-                            }}
+                            onClick={() => openHistoryModal(customer)}
                           >
                             History
                           </button>
@@ -361,6 +366,19 @@ export default function POSCustomersPage() {
             </form>
           </div>
         </div>
+      )}
+      
+      {/* Customer History Modal */}
+      {selectedCustomer && (
+        <CustomerHistoryModal
+          isOpen={showHistoryModal}
+          onClose={() => {
+            setShowHistoryModal(false)
+            setSelectedCustomer(null)
+          }}
+          customerId={selectedCustomer.id}
+          customerName={selectedCustomer.name}
+        />
       )}
     </div>
   )

@@ -77,6 +77,17 @@ export async function POST(request: NextRequest) {
       `);
     }
     
+    // Update customer total spent if customerId is provided
+    if (body.customerId) {
+      console.log('Updating customer total spent...');
+      await db.execute(`
+        UPDATE pos_customers 
+        SET "totalSpent" = "totalSpent" + ${finalAmount},
+            "updatedAt" = NOW()
+        WHERE id = ${body.customerId}
+      `);
+    }
+    
     console.log('Order creation completed successfully');
     return NextResponse.json({
       success: true,
