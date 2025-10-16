@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 export async function GET() {
   try {
     // Test basic database connection
-    const result = await db.execute('SELECT 1 as test');
+    await db.execute('SELECT 1 as test');
     
     // Check if POS tables exist
     const tablesCheck = await db.execute(`
@@ -14,7 +14,7 @@ export async function GET() {
       AND table_name LIKE 'pos_%'
     `);
     
-    const existingTables = tablesCheck.rows.map((row: any) => row.table_name);
+    const existingTables = tablesCheck.rows.map((row: { table_name: string }) => row.table_name);
     
     return NextResponse.json({
       success: true,
