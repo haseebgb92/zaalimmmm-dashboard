@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { X, Printer, CheckCircle, XCircle, MessageCircle } from 'lucide-react'
 
 interface OrderItem {
@@ -54,9 +54,9 @@ export default function OrderDetailsModal({ orderId, isOpen, onClose, onStatusUp
     if (isOpen && orderId) {
       fetchOrderDetails()
     }
-  }, [isOpen, orderId])
+  }, [isOpen, orderId, fetchOrderDetails])
 
-  const fetchOrderDetails = async () => {
+  const fetchOrderDetails = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fetch(`/api/pos/orders/${orderId}`)
@@ -68,7 +68,7 @@ export default function OrderDetailsModal({ orderId, isOpen, onClose, onStatusUp
     } finally {
       setLoading(false)
     }
-  }
+  }, [orderId])
 
   const updateOrderStatus = async (newStatus: string) => {
     setUpdating(true)

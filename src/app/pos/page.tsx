@@ -36,10 +36,18 @@ export default function POSPage() {
 
   const [customerHistory, setCustomerHistory] = useState<HistoryOrder[]>([])
   const [showCustomerHistory, setShowCustomerHistory] = useState(false)
-  const [showOrderActionsModal, setShowOrderActionsModal] = useState(false)
-  const [currentOrderData, setCurrentOrderData] = useState<OrderActionsData | null>(null)
   const [showCompletionModal, setShowCompletionModal] = useState(false)
-  const [completedOrderData, setCompletedOrderData] = useState<any>(null)
+  const [completedOrderData, setCompletedOrderData] = useState<{
+    orderNumber: string
+    cart: CartItem[]
+    total: number
+    customerName: string
+    customerPhone: string
+    customerAddress: string
+    selectedRider: string
+    orderType: string
+    paymentMethod: string
+  } | null>(null)
 
   const router = useRouter()
 
@@ -321,64 +329,7 @@ Please deliver this order. Thank you! 🥙`
     }
   }
 
-  interface OrderActionsData {
-    orderNumber: string
-    cart: CartItem[]
-    total: number
-    customerName: string
-    customerPhone?: string
-    customerAddress?: string
-    selectedRider?: { id: number; name: string; phoneNumber: string } | null
-  }
 
-  const showOrderActions = (orderData: OrderActionsData) => {
-    setCurrentOrderData(orderData)
-    setShowOrderActionsModal(true)
-  }
-
-  const sendWhatsAppToCustomer = () => {
-    if (currentOrderData && currentOrderData.customerPhone) {
-      const customerMessage = generateWhatsAppMessage(
-        currentOrderData.orderNumber, 
-        currentOrderData.cart, 
-        currentOrderData.total, 
-        currentOrderData.customerName, 
-        'customer', 
-        currentOrderData.selectedRider
-      )
-      const customerWhatsappUrl = `https://wa.me/${currentOrderData.customerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(customerMessage)}`
-      window.open(customerWhatsappUrl, '_blank')
-    }
-  }
-
-  const sendWhatsAppToRider = () => {
-    if (currentOrderData && currentOrderData.selectedRider) {
-      const rider = currentOrderData.selectedRider
-      const riderMessage = generateWhatsAppMessage(
-        currentOrderData.orderNumber, 
-        currentOrderData.cart, 
-        currentOrderData.total, 
-        currentOrderData.customerName, 
-        'rider', 
-        undefined, 
-        currentOrderData.customerPhone, 
-        currentOrderData.customerAddress
-      )
-      const riderWhatsappUrl = `https://wa.me/${rider.phoneNumber.replace(/\D/g, '')}?text=${encodeURIComponent(riderMessage)}`
-      window.open(riderWhatsappUrl, '_blank')
-    }
-  }
-
-  const handlePrintReceipt = () => {
-    if (currentOrderData) {
-      printThermalReceipt(currentOrderData.orderNumber, currentOrderData.cart, currentOrderData.total, currentOrderData.customerName)
-    }
-  }
-
-  const closeOrderActionsModal = () => {
-    setShowOrderActionsModal(false)
-    setCurrentOrderData(null)
-  }
 
   const printThermalReceipt = (orderNumber: string, cartItems: CartItem[], total: number, customerName: string) => {
     const itemsList = cartItems.map(item => 
@@ -1063,57 +1014,6 @@ Thank you for choosing Zaalimmmm!
         </div>
       )}
 
-      {/* Order Actions Modal */}
-      {showOrderActionsModal && currentOrderData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4 text-green-700">✅ Order Created Successfully!</h3>
-            <div className="mb-4 p-4 bg-gray-50 rounded">
-              <p className="font-medium">Order #{currentOrderData.orderNumber}</p>
-              <p className="text-sm text-gray-600">Total: ₨{currentOrderData.total.toFixed(2)}</p>
-              {currentOrderData.customerName && (
-                <p className="text-sm text-gray-600">Customer: {currentOrderData.customerName}</p>
-              )}
-            </div>
-            
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-gray-700">Choose actions:</p>
-              
-              {currentOrderData.customerPhone && (
-                <button
-                  onClick={sendWhatsAppToCustomer}
-                  className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 flex items-center justify-center gap-2"
-                >
-                  📱 Send WhatsApp to Customer
-                </button>
-              )}
-              
-              {currentOrderData.selectedRider && (
-                <button
-                  onClick={sendWhatsAppToRider}
-                  className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
-                >
-                  🚚 Send WhatsApp to Rider
-                </button>
-              )}
-              
-              <button
-                onClick={handlePrintReceipt}
-                className="w-full bg-purple-600 text-white py-3 rounded-md hover:bg-purple-700 flex items-center justify-center gap-2"
-              >
-                🖨️ Print Receipt
-              </button>
-              
-              <button
-                onClick={closeOrderActionsModal}
-                className="w-full bg-gray-600 text-white py-2 rounded-md hover:bg-gray-700"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Mobile Cart Modal */}
       {showCartModal && (

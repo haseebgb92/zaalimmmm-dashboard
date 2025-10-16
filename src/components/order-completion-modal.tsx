@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, MessageCircle, CheckCircle, User, Phone, MapPin } from 'lucide-react'
+import { X, MessageCircle, CheckCircle, User } from 'lucide-react'
 
 interface OrderItem {
   productId: number
