@@ -49,22 +49,6 @@ export default function AnalyticsPage() {
   const [selectedFilter, setSelectedFilter] = useState('thisWeek')
   const router = useRouter()
 
-  // Check authentication (only on client side)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken');
-      const role = localStorage.getItem('userRole');
-      
-      if (!token || role !== 'pos') {
-        router.push('/login');
-        return;
-      }
-
-      // Load analytics data
-      fetchAnalyticsData()
-    }
-  }, [router, fetchAnalyticsData])
-
   const fetchAnalyticsData = useCallback(async (filter = selectedFilter) => {
     try {
       setLoading(true)
@@ -81,6 +65,22 @@ export default function AnalyticsPage() {
       setLoading(false)
     }
   }, [selectedFilter])
+
+  // Check authentication (only on client side)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('authToken');
+      const role = localStorage.getItem('userRole');
+      
+      if (!token || role !== 'pos') {
+        router.push('/login');
+        return;
+      }
+
+      // Load analytics data
+      fetchAnalyticsData()
+    }
+  }, [router, fetchAnalyticsData])
 
   const formatCurrency = (amount: number) => {
     return `₨${amount.toFixed(2)}`

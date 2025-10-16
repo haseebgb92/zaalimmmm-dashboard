@@ -50,25 +50,6 @@ export default function POSDashboardPage() {
   const [selectedFilter, setSelectedFilter] = useState('thisWeek')
   const router = useRouter()
 
-  // Check authentication (only on client side)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken');
-      const role = localStorage.getItem('userRole');
-      
-      if (!token || role !== 'pos') {
-        router.push('/login');
-        return;
-      }
-
-      // Load dashboard data
-      fetchDashboardData()
-      // Update every 30 seconds
-      const interval = setInterval(() => fetchDashboardData(), 30000)
-      return () => clearInterval(interval)
-    }
-  }, [router, fetchDashboardData])
-
   const fetchDashboardData = useCallback(async (filter = selectedFilter) => {
     try {
       setLoading(true)
@@ -88,6 +69,25 @@ export default function POSDashboardPage() {
       setLoading(false)
     }
   }, [selectedFilter])
+
+  // Check authentication (only on client side)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('authToken');
+      const role = localStorage.getItem('userRole');
+      
+      if (!token || role !== 'pos') {
+        router.push('/login');
+        return;
+      }
+
+      // Load dashboard data
+      fetchDashboardData()
+      // Update every 30 seconds
+      const interval = setInterval(() => fetchDashboardData(), 30000)
+      return () => clearInterval(interval)
+    }
+  }, [router, fetchDashboardData])
 
   const formatCurrency = (amount: number) => {
     return `₨${amount.toFixed(2)}`
