@@ -63,7 +63,7 @@ export const posCustomers = pgTable('pos_customers', {
   email: text('email'),
   address: text('address'),
   loyaltyPoints: integer('loyalty_points').default(0).notNull(),
-  totalSpent: numeric('total_spent', { precision: 10, scale: 2 }).default(0).notNull(),
+  totalSpent: numeric('total_spent', { precision: 10, scale: 2 }).default('0').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -83,7 +83,7 @@ export const posOrders = pgTable('pos_orders', {
   customerId: integer('customer_id'),
   riderId: integer('rider_id'),
   totalAmount: numeric('total_amount', { precision: 10, scale: 2 }).notNull(),
-  discountAmount: numeric('discount_amount', { precision: 10, scale: 2 }).default(0).notNull(),
+  discountAmount: numeric('discount_amount', { precision: 10, scale: 2 }).default('0').notNull(),
   finalAmount: numeric('final_amount', { precision: 10, scale: 2 }).notNull(),
   status: text('status').default('pending').notNull(),
   orderType: text('order_type').default('dine-in').notNull(),
@@ -108,8 +108,8 @@ export const posDailySales = pgTable('pos_daily_sales', {
   id: serial('id').primaryKey(),
   date: date('date').notNull(),
   totalOrders: integer('total_orders').default(0).notNull(),
-  totalRevenue: numeric('total_revenue', { precision: 10, scale: 2 }).default(0).notNull(),
-  totalDiscounts: numeric('total_discounts', { precision: 10, scale: 2 }).default(0).notNull(),
+  totalRevenue: numeric('total_revenue', { precision: 10, scale: 2 }).default('0').notNull(),
+  totalDiscounts: numeric('total_discounts', { precision: 10, scale: 2 }).default('0').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
@@ -121,7 +121,7 @@ export const posHourlySales = pgTable('pos_hourly_sales', {
   date: date('date').notNull(),
   hour: integer('hour').notNull(),
   totalOrders: integer('total_orders').default(0).notNull(),
-  totalRevenue: numeric('total_revenue', { precision: 10, scale: 2 }).default(0).notNull(),
+  totalRevenue: numeric('total_revenue', { precision: 10, scale: 2 }).default('0').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({

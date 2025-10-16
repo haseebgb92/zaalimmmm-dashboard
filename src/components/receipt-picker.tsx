@@ -113,6 +113,7 @@ export function ReceiptPicker({ onReceiptSelect, currentReceiptUrl, onRemoveRece
                 onClick={openGallery}
                 className="w-full justify-start"
               >
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image className="h-4 w-4 mr-2" />
                 Choose from Gallery
               </Button>
