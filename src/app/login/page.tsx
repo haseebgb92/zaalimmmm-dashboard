@@ -110,9 +110,9 @@ export default function LoginPage() {
           </div>
 
           <div className="text-center text-sm text-gray-600">
-            <p>Demo Accounts:</p>
-            <p><strong>POS:</strong> pos / pos123</p>
-            <p><strong>Dashboard:</strong> dashboard / dashboard123</p>
+            <p>Login Credentials:</p>
+            <p><strong>POS:</strong> Hassanmohsin / Hassan9420</p>
+            <p><strong>Dashboard:</strong> Haseebgb / Ftw852!gb</p>
             <p><strong>Admin:</strong> admin / admin123</p>
           </div>
         </form>

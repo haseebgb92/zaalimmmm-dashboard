@@ -11,15 +11,15 @@ export interface User {
 const users: User[] = [
   {
     id: '1',
-    username: 'pos',
+    username: 'Hassanmohsin',
     role: 'pos',
-    name: 'POS User'
+    name: 'Hassan Mohsin'
   },
   {
     id: '2', 
-    username: 'dashboard',
+    username: 'Haseebgb',
     role: 'dashboard',
-    name: 'Dashboard User'
+    name: 'Haseeb GB'
   },
   {
     id: '3',
@@ -31,8 +31,8 @@ const users: User[] = [
 
 // Simple password store (in production, use hashed passwords)
 const passwords: Record<string, string> = {
-  'pos': 'pos123',
-  'dashboard': 'dashboard123', 
+  'Hassanmohsin': 'Hassan9420',
+  'Haseebgb': 'Ftw852!gb', 
   'admin': 'admin123'
 };
 
