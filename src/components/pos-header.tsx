@@ -46,7 +46,9 @@ export function POSHeader({
             </div>
             
             {/* Right: Hamburger Menu */}
-            <POSHamburgerMenu onLogout={onLogout} currentPage={currentPage} />
+            <div className="relative">
+              <POSHamburgerMenu onLogout={onLogout} currentPage={currentPage} />
+            </div>
           </div>
         </div>
       </header>

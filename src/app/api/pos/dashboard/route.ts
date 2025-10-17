@@ -90,23 +90,24 @@ export async function GET(request: NextRequest) {
       AND "createdAt" <= '${endDate.toISOString()}'
     `);
     
-    // Get top selling items for the date range (all items)
+    // Get top selling items for the date range (only items that were actually sold)
     const topItems = await db.execute(`
       SELECT 
         p.id,
         p.name,
         p.category,
         p.price,
-        COALESCE(SUM(oi.quantity), 0) as total_quantity,
-        COALESCE(SUM(oi."subTotal"), 0) as total_amount,
-        COALESCE(COUNT(DISTINCT oi."orderId"), 0) as order_count
+        SUM(oi.quantity) as total_quantity,
+        SUM(oi."subTotal") as total_amount,
+        COUNT(DISTINCT oi."orderId") as order_count
       FROM pos_products p
-      LEFT JOIN pos_order_items oi ON p.id = oi."productId"
-      LEFT JOIN pos_orders o ON oi."orderId" = o.id 
+      INNER JOIN pos_order_items oi ON p.id = oi."productId"
+      INNER JOIN pos_orders o ON oi."orderId" = o.id 
         AND o."createdAt" >= '${startDate.toISOString()}' 
         AND o."createdAt" <= '${endDate.toISOString()}'
       WHERE p."isActive" = true
       GROUP BY p.id, p.name, p.category, p.price
+      HAVING SUM(oi.quantity) > 0
       ORDER BY total_quantity DESC, p.name ASC
     `);
 
