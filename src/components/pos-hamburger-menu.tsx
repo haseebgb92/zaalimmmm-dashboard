@@ -48,9 +48,10 @@ export function POSHamburgerMenu({ onLogout, currentPage }: POSHamburgerMenuProp
       {isOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setIsOpen(false)} />
-          <div className="fixed top-0 right-0 h-full w-80 bg-white shadow-xl">
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-6">
+          <div className="fixed top-0 right-0 h-full w-80 bg-white shadow-xl overflow-hidden">
+            <div className="h-full flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
                 <h2 className="text-lg font-semibold text-gray-800">POS Navigation</h2>
                 <button
                   onClick={() => setIsOpen(false)}
@@ -62,31 +63,35 @@ export function POSHamburgerMenu({ onLogout, currentPage }: POSHamburgerMenuProp
                 </button>
               </div>
               
-              <div className="space-y-2">
-                {menuItems.map((item) => (
+              {/* Menu Items */}
+              <div className="flex-1 p-4 bg-white overflow-y-auto">
+              
+                <div className="space-y-2">
+                  {menuItems.map((item) => (
+                    <button
+                      key={item.href}
+                      onClick={() => handleMenuItemClick(item.href)}
+                      className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                        currentPage === item.href
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                          : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      <span className="font-medium">{item.label}</span>
+                    </button>
+                  ))}
+                  
+                  <div className="border-t border-gray-200 my-4"></div>
+                  
                   <button
-                    key={item.href}
-                    onClick={() => handleMenuItemClick(item.href)}
-                    className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${
-                      currentPage === item.href
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                        : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
-                    }`}
+                    onClick={handleLogout}
+                    className="w-full flex items-center space-x-3 p-3 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 transition-colors"
                   >
-                    <span className="text-lg">{item.icon}</span>
-                    <span className="font-medium">{item.label}</span>
+                    <span className="text-lg">🚪</span>
+                    <span className="font-medium">Logout</span>
                   </button>
-                ))}
-                
-                <div className="border-t border-gray-200 my-4"></div>
-                
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center space-x-3 p-3 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 transition-colors"
-                >
-                  <span className="text-lg">🚪</span>
-                  <span className="font-medium">Logout</span>
-                </button>
+                </div>
               </div>
             </div>
           </div>
