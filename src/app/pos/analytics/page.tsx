@@ -338,25 +338,37 @@ export default function AnalyticsPage() {
               Hourly Sales Trend
             </h3>
             <div className="space-y-3">
-              {hourlyData.slice(0, 12).map((hour) => (
-                <div key={hour.hour} className="flex items-center space-x-3">
-                  <div className="w-12 text-sm text-gray-600 font-medium">
-                    {formatTime(hour.hour)}
-                  </div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
-                    <div 
-                      className="bg-gradient-to-r from-blue-500 to-indigo-500 h-4 rounded-full transition-all duration-500"
-                      style={{ width: `${Math.max(5, (hour.orders / Math.max(...hourlyData.map(h => h.orders), 1)) * 100)}%` }}
-                    ></div>
-                  </div>
-                  <div className="w-16 text-sm text-gray-600 text-right">
-                    {hour.orders} orders
-                  </div>
-                  <div className="w-20 text-sm text-green-600 text-right font-medium">
-                    {formatCurrency(hour.revenue)}
-                  </div>
+              {hourlyData.length > 0 ? (
+                hourlyData
+                  .filter(hour => hour.orders > 0) // Only show hours with orders
+                  .slice(0, 12) // Show up to 12 hours with data
+                  .map((hour) => {
+                    const maxOrders = Math.max(...hourlyData.map(h => h.orders), 1);
+                    return (
+                      <div key={hour.hour} className="flex items-center space-x-3">
+                        <div className="w-12 text-sm text-gray-600 font-medium">
+                          {formatTime(hour.hour)}
+                        </div>
+                        <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
+                          <div 
+                            className="bg-gradient-to-r from-blue-500 to-indigo-500 h-4 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.max(5, (hour.orders / maxOrders) * 100)}%` }}
+                          ></div>
+                        </div>
+                        <div className="w-16 text-sm text-gray-600 text-right">
+                          {hour.orders} orders
+                        </div>
+                        <div className="w-20 text-sm text-green-600 text-right font-medium">
+                          {formatCurrency(hour.revenue)}
+                        </div>
+                      </div>
+                    );
+                  })
+              ) : (
+                <div className="text-center text-gray-500 py-8">
+                  No hourly data available for the selected period
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
