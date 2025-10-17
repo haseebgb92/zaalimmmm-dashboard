@@ -254,8 +254,8 @@ export default function POSDashboardPage() {
         </div>
 
         {/* Top Selling Items */}
-        {topItems.length > 0 && (
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
+        {topItems.length > 0 ? (
+          <div key={`top-items-${selectedFilter}`} className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                 <span className="w-6 h-6 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mr-2">
@@ -321,6 +321,16 @@ export default function POSDashboardPage() {
                 </button>
               </div>
             )}
+          </div>
+        ) : (
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🏆</span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">No Top Selling Items</h3>
+              <p className="text-gray-600">No items have been sold for the selected period.</p>
+            </div>
           </div>
         )}
 
