@@ -924,28 +924,29 @@ export default function POSPage() {
 
       {/* Mobile Cart Modal */}
       {showCartModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50 lg:hidden">
-          <div className="bg-white rounded-t-2xl w-full max-h-[80vh] overflow-hidden">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold flex items-center">
-                  <span className="w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mr-2">
-                    <span className="text-white text-xs">🛒</span>
-                  </span>
-                  Cart ({cart.reduce((sum, item) => sum + item.quantity, 0)})
-                </h3>
-                <button
-                  onClick={() => setShowCartModal(false)}
-                  className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-white z-50 lg:hidden flex flex-col">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 shadow-lg">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold flex items-center">
+                <span className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center mr-3">
+                  <span className="text-white text-sm">🛒</span>
+                </span>
+                Cart ({cart.reduce((sum, item) => sum + item.quantity, 0)})
+              </h3>
+              <button
+                onClick={() => setShowCartModal(false)}
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            
-            <div className="p-4 overflow-y-auto max-h-[60vh]">
+          </div>
+          
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-4">
               {cart.length === 0 ? (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -1042,31 +1043,35 @@ export default function POSPage() {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="space-y-3 pb-4">
-                    <button
-                      onClick={() => {
-                        processOrder()
-                        setShowCartModal(false)
-                      }}
-                      className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-lg font-medium hover:from-green-600 hover:to-emerald-600 shadow-md transition-all duration-200 transform hover:scale-105"
-                    >
-                      💳 Process Order
-                    </button>
-                    <button
-                      onClick={() => {
-                        clearCart()
-                        setShowCartModal(false)
-                      }}
-                      className="w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white py-3 rounded-lg font-medium hover:from-gray-600 hover:to-gray-700 shadow-md transition-all duration-200"
-                    >
-                      🗑️ Clear Cart
-                    </button>
-                  </div>
                 </>
               )}
-            </div>
           </div>
+          
+          {/* Action Buttons - Fixed at bottom */}
+          {cart.length > 0 && (
+            <div className="bg-white border-t border-gray-200 p-4 shadow-lg">
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    processOrder()
+                    setShowCartModal(false)
+                  }}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-lg font-medium hover:from-green-600 hover:to-emerald-600 shadow-md transition-all duration-200 transform hover:scale-105"
+                >
+                  💳 Process Order
+                </button>
+                <button
+                  onClick={() => {
+                    clearCart()
+                    setShowCartModal(false)
+                  }}
+                  className="w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white py-3 rounded-lg font-medium hover:from-gray-600 hover:to-gray-700 shadow-md transition-all duration-200"
+                >
+                  🗑️ Clear Cart
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
