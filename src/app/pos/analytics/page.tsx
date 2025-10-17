@@ -144,7 +144,7 @@ export default function AnalyticsPage() {
               >
                 ← Dashboard
               </Link>
-              <POSHamburgerMenu onLogout={handleLogout} />
+              <POSHamburgerMenu onLogout={handleLogout} currentPage="/pos/analytics" />
             </div>
           </div>
         </div>

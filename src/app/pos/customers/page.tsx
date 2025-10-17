@@ -161,7 +161,7 @@ export default function POSCustomersPage() {
               >
                 ← Back to POS
               </Link>
-              <POSHamburgerMenu onLogout={handleLogout} />
+              <POSHamburgerMenu onLogout={handleLogout} currentPage="/pos/customers" />
             </div>
           </div>
         </div>

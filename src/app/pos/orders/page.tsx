@@ -149,7 +149,7 @@ export default function POSOrdersPage() {
               >
                 ← Back to POS
               </Link>
-              <POSHamburgerMenu onLogout={handleLogout} />
+              <POSHamburgerMenu onLogout={handleLogout} currentPage="/pos/orders" />
             </div>
           </div>
         </div>

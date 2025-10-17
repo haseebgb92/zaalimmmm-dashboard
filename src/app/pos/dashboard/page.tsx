@@ -162,7 +162,7 @@ export default function POSDashboardPage() {
               >
                 ← Back to POS
               </Link>
-              <POSHamburgerMenu onLogout={handleLogout} />
+              <POSHamburgerMenu onLogout={handleLogout} currentPage="/pos/dashboard" />
             </div>
           </div>
         </div>
