@@ -1,6 +1,5 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { POSHamburgerMenu } from './pos-hamburger-menu'
 
@@ -23,7 +22,6 @@ export function POSHeader({
   onAddClick, 
   addButtonLabel = "Add" 
 }: POSHeaderProps) {
-  const router = useRouter()
 
   return (
     <>
