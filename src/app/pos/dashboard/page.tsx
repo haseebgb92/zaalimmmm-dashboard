@@ -56,10 +56,16 @@ export default function POSDashboardPage() {
   const fetchDashboardData = useCallback(async (filter = selectedFilter) => {
     try {
       setLoading(true)
+      // Add cache-busting parameter to ensure fresh data
       const url = filter === 'custom' ? 
-        `/api/pos/dashboard?filter=${filter}` : 
-        `/api/pos/dashboard?filter=${filter}`
-      const response = await fetch(url)
+        `/api/pos/dashboard?filter=${filter}&t=${Date.now()}` : 
+        `/api/pos/dashboard?filter=${filter}&t=${Date.now()}`
+      const response = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
       const data = await response.json()
       setStats(data.stats)
       setHourlyData(data.hourlyData)
@@ -127,8 +133,8 @@ export default function POSDashboardPage() {
       {/* Header */}
       <header className="bg-white/90 backdrop-blur-md shadow-lg border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center py-4 lg:py-0 lg:h-16">
+            <div className="flex items-center space-x-3 mb-4 lg:mb-0">
               <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">📊</span>
               </div>
@@ -136,13 +142,14 @@ export default function POSDashboardPage() {
                 Real-time Dashboard
               </h1>
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="text-sm text-gray-500">
+            {/* Mobile: Stack buttons vertically, Desktop: Horizontal */}
+            <div className="flex flex-col sm:flex-row gap-2 lg:gap-3 lg:items-center">
+              <div className="text-sm text-gray-500 mb-2 lg:mb-0">
                 Last updated: {lastUpdated.toLocaleTimeString()}
               </div>
               <button
                 onClick={() => fetchDashboardData()}
-                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors self-start lg:self-auto"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -150,7 +157,7 @@ export default function POSDashboardPage() {
               </button>
               <Link 
                 href="/pos" 
-                className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-lg hover:from-gray-600 hover:to-gray-700 shadow-md transition-all duration-200 transform hover:scale-105"
+                className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-lg hover:from-gray-600 hover:to-gray-700 shadow-md transition-all duration-200 transform hover:scale-105 text-center"
               >
                 ← Back to POS
               </Link>
@@ -186,6 +193,7 @@ export default function POSDashboardPage() {
                 key={filter.key}
                 onClick={() => {
                   setSelectedFilter(filter.key)
+                  setCurrentPage(1) // Reset pagination when filter changes
                   fetchDashboardData(filter.key)
                 }}
                 className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${

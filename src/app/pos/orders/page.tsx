@@ -131,8 +131,8 @@ export default function POSOrdersPage() {
       {/* Header */}
       <header className="bg-white/90 backdrop-blur-md shadow-lg border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center py-4 lg:py-0 lg:h-16">
+            <div className="flex items-center space-x-3 mb-4 lg:mb-0">
               <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">📦</span>
               </div>
@@ -140,16 +140,17 @@ export default function POSOrdersPage() {
                 Orders Management
               </h1>
             </div>
-            <div className="flex space-x-3 top-bar-buttons">
+            {/* Mobile: Stack buttons vertically, Desktop: Horizontal */}
+            <div className="flex flex-col sm:flex-row gap-2 lg:gap-3">
               <Link 
                 href="/pos" 
-                className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-2 py-2 rounded-lg hover:from-gray-600 hover:to-gray-700 shadow-md transition-all duration-200 transform hover:scale-105 text-sm"
+                className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-lg hover:from-gray-600 hover:to-gray-700 shadow-md transition-all duration-200 transform hover:scale-105 text-center"
               >
                 ← Back to POS
               </Link>
               <button
                 onClick={handleLogout}
-                className="bg-gradient-to-r from-red-500 to-red-600 text-white px-2 py-2 rounded-lg hover:from-red-600 hover:to-red-700 shadow-md transition-all duration-200 transform hover:scale-105 text-sm"
+                className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 shadow-md transition-all duration-200 transform hover:scale-105"
               >
                 🚪 Logout
               </button>
