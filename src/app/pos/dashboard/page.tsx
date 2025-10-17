@@ -61,15 +61,25 @@ export default function POSDashboardPage() {
       const url = filter === 'custom' ? 
         `/api/pos/dashboard?filter=${filter}&t=${Date.now()}` : 
         `/api/pos/dashboard?filter=${filter}&t=${Date.now()}`
+      
+      console.log('Fetching dashboard data with filter:', filter, 'URL:', url)
+      
       const response = await fetch(url, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache'
         }
       })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
+      console.log('Dashboard data received:', data)
+      
       setStats(data.stats)
-      setHourlyData(data.hourlyData)
+      setHourlyData(data.hourlyData || [])
       setTopItems(data.topItems || [])
       setDateRange(data.dateRange)
       setLastUpdated(new Date())
@@ -137,26 +147,10 @@ export default function POSDashboardPage() {
         icon="📊"
         onLogout={handleLogout}
         currentPage="/pos/dashboard"
+        showLastUpdated={true}
+        lastUpdated={lastUpdated.toLocaleTimeString()}
+        onRefresh={() => fetchDashboardData()}
       />
-      
-      {/* Dashboard Info Bar */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-28 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-10">
-            <div className="text-sm text-gray-500">
-              Last updated: {lastUpdated.toLocaleTimeString()}
-            </div>
-            <button
-              onClick={() => fetchDashboardData()}
-              className="p-1 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Date Filter */}

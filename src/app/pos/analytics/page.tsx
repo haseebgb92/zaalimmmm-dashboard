@@ -57,15 +57,25 @@ export default function AnalyticsPage() {
       setLoading(true)
       // Add cache-busting parameter to ensure fresh data
       const url = `/api/pos/dashboard?filter=${filter}&t=${Date.now()}`
+      
+      console.log('Fetching analytics data with filter:', filter, 'URL:', url)
+      
       const response = await fetch(url, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache'
         }
       })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
+      console.log('Analytics data received:', data)
+      
       setStats(data.stats)
-      setHourlyData(data.hourlyData)
+      setHourlyData(data.hourlyData || [])
       setTopItems(data.topItems || [])
       setDateRange(data.dateRange)
     } catch (error) {

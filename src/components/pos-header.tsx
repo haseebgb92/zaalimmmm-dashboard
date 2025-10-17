@@ -11,6 +11,9 @@ interface POSHeaderProps {
   showAddButton?: boolean
   onAddClick?: () => void
   addButtonLabel?: string
+  showLastUpdated?: boolean
+  lastUpdated?: string
+  onRefresh?: () => void
 }
 
 export function POSHeader({ 
@@ -20,7 +23,10 @@ export function POSHeader({
   currentPage, 
   showAddButton = false, 
   onAddClick, 
-  addButtonLabel = "Add" 
+  addButtonLabel = "Add",
+  showLastUpdated = false,
+  lastUpdated,
+  onRefresh
 }: POSHeaderProps) {
 
   return (
@@ -48,7 +54,25 @@ export function POSHeader({
       {/* Action Bar Below Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-end items-center h-12">
+          <div className="flex justify-between items-center h-12">
+            {/* Left side - Last Updated info (if dashboard) */}
+            {showLastUpdated && lastUpdated && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-500">Last updated: {lastUpdated}</span>
+                {onRefresh && (
+                  <button
+                    onClick={onRefresh}
+                    className="p-1 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
+            
+            {/* Right side - Action buttons */}
             <div className="flex items-center gap-2">
               {/* Add Button (if needed) */}
               {showAddButton && onAddClick && (
