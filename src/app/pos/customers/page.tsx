@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { POSHamburgerMenu } from '@/components/pos-hamburger-menu'
 import { PosCustomer } from '@/lib/db/schema'
 import CustomerHistoryModal from '@/components/customer-history-modal'
 
@@ -147,7 +148,7 @@ export default function POSCustomersPage() {
               </h1>
             </div>
             {/* Mobile: Stack buttons vertically, Desktop: Horizontal */}
-            <div className="flex flex-col sm:flex-row gap-2 lg:gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 lg:gap-3 lg:items-center">
               <button
                 onClick={openAddModal}
                 className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-emerald-600 shadow-md transition-all duration-200 transform hover:scale-105 text-center"
@@ -160,12 +161,7 @@ export default function POSCustomersPage() {
               >
                 ← Back to POS
               </Link>
-              <button
-                onClick={handleLogout}
-                className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 shadow-md transition-all duration-200 transform hover:scale-105"
-              >
-                🚪 Logout
-              </button>
+              <POSHamburgerMenu onLogout={handleLogout} />
             </div>
           </div>
         </div>

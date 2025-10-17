@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { POSHamburgerMenu } from '@/components/pos-hamburger-menu'
 
 interface DashboardStats {
   ordersCount: number
@@ -161,12 +162,7 @@ export default function POSDashboardPage() {
               >
                 ← Back to POS
               </Link>
-              <button
-                onClick={handleLogout}
-                className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 shadow-md transition-all duration-200 transform hover:scale-105"
-              >
-                🚪 Logout
-              </button>
+              <POSHamburgerMenu onLogout={handleLogout} />
             </div>
           </div>
         </div>
