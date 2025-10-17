@@ -109,8 +109,9 @@ export default function POSDashboardPage() {
     }
   }, [router, fetchDashboardData])
 
-  const formatCurrency = (amount: number) => {
-    return `₨${amount.toFixed(2)}`
+  const formatCurrency = (amount: number | string | null | undefined) => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : (amount || 0)
+    return `₨${numAmount.toFixed(2)}`
   }
 
   const formatTime = (hour: number) => {

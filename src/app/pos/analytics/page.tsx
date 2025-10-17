@@ -101,8 +101,9 @@ export default function AnalyticsPage() {
     }
   }, [router, fetchAnalyticsData])
 
-  const formatCurrency = (amount: number) => {
-    return `₨${amount.toFixed(2)}`
+  const formatCurrency = (amount: number | string | null | undefined) => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : (amount || 0)
+    return `₨${numAmount.toFixed(2)}`
   }
 
   const formatTime = (hour: number) => {
@@ -393,7 +394,7 @@ export default function AnalyticsPage() {
             <div className="space-y-4">
               {Object.entries(stats?.paymentMethods || {}).map(([method, count]) => {
                 const total = Object.values(stats?.paymentMethods || {}).reduce((a, b) => a + b, 0)
-                const percentage = total > 0 ? (count / total) * 100 : 0
+                const percentage = total > 0 ? (Number(count) / total) * 100 : 0
                 const colors = {
                   cash: 'from-green-500 to-emerald-500',
                   card: 'from-blue-500 to-indigo-500',

@@ -181,9 +181,9 @@ export async function GET(request: NextRequest) {
       console.log('POS orders table does not exist, returning empty dashboard data');
       return NextResponse.json({
         stats: {
-          todayOrders: 0,
-          todayRevenue: 0,
-          todayDiscounts: 0,
+          ordersCount: 0,
+          totalRevenue: 0,
+          totalDiscounts: 0,
           averageOrderValue: 0,
           peakHour: 0,
           peakHourOrders: 0,
@@ -194,6 +194,12 @@ export async function GET(request: NextRequest) {
           orders: 0,
           revenue: 0,
         })),
+        topItems: [],
+        dateRange: {
+          start: new Date().toISOString(),
+          end: new Date().toISOString(),
+          filter: 'thisWeek'
+        }
       });
     }
     
