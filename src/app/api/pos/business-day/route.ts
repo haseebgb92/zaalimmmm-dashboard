@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       if (businessDay.length > 0) {
         return NextResponse.json(businessDay[0])
       }
-    } catch (tableError) {
+    } catch {
       console.log('Business day table does not exist yet, returning default status')
     }
 
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
           message: 'Business day opened successfully',
           businessDay: result[0]
         })
-      } catch (tableError) {
+      } catch {
         console.log('Business day table does not exist yet, simulating success')
         return NextResponse.json({
           success: true,
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
           message: 'Business day closed successfully',
           businessDay: result[0]
         })
-      } catch (tableError) {
+      } catch {
         console.log('Business day table does not exist yet, simulating success')
         return NextResponse.json({
           success: true,

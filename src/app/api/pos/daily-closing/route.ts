@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     // If no existing record, calculate totals from orders for the day using raw SQL
-    let orders: any[] = []
+    let orders: { finalAmount: string | number; paymentMethod?: string }[] = []
     try {
       orders = await db.execute(`
         SELECT "finalAmount", "paymentMethod"
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
         WHERE DATE("createdAt") = '${date}'
         ORDER BY "createdAt" DESC
       `)
-    } catch (orderError) {
+    } catch {
       console.log('Orders table query failed, using empty totals')
       orders = []
     }
