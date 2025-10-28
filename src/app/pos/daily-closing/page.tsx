@@ -40,10 +40,6 @@ export default function DailyClosingPage() {
     window.location.href = '/login'
   }
 
-  useEffect(() => {
-    fetchDailyClosingData()
-  }, [selectedDate, fetchDailyClosingData])
-
   const fetchDailyClosingData = useCallback(async () => {
     try {
       setLoading(true)
@@ -84,6 +80,10 @@ export default function DailyClosingPage() {
       setLoading(false)
     }
   }, [selectedDate])
+
+  useEffect(() => {
+    fetchDailyClosingData()
+  }, [selectedDate, fetchDailyClosingData])
 
   const calculateCashTotal = () => {
     if (!closingData) return 0
