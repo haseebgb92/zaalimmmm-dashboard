@@ -57,8 +57,9 @@ export default function DailyClosingPage() {
       })
       
       if (response.ok) {
-        const result = await response.json()
-        alert(`Day completed successfully! Total orders: Rs. ${Object.values(result.totals).reduce((a: number, b: number) => a + b, 0).toFixed(2)}`)
+        const result = await response.json() as { totals: Record<string, number> }
+        const totalAmount = Object.values(result.totals).reduce((a: number, b: number) => a + b, 0)
+        alert(`Day completed successfully! Total orders: Rs. ${totalAmount.toFixed(2)}`)
         // Refresh data to show completed status
         fetchDailyClosingData()
       } else {
