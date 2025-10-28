@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { posBusinessDay } from '@/lib/db/schema'
-import { eq, desc } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
   try {

@@ -28,6 +28,7 @@ interface DailyClosingData {
 }
 
 export default function DailyClosingPage() {
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [closingData, setClosingData] = useState<DailyClosingData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -91,7 +92,7 @@ export default function DailyClosingPage() {
     }, 30000) // Update every 30 seconds
     
     return () => clearInterval(interval)
-  }, [selectedDate, fetchDailyClosingData])
+  }, [fetchDailyClosingData])
 
   const calculateCashTotal = () => {
     if (!closingData) return 0
