@@ -24,12 +24,18 @@ export async function GET(request: NextRequest) {
     }
 
     // If no existing record, calculate totals from orders for the day using raw SQL
-    const orders = await db.execute(`
-      SELECT "finalAmount", "paymentMethod"
-      FROM pos_orders 
-      WHERE DATE("createdAt") = '${date}'
-      ORDER BY "createdAt" DESC
-    `)
+    let orders: any[] = []
+    try {
+      orders = await db.execute(`
+        SELECT "finalAmount", "paymentMethod"
+        FROM pos_orders 
+        WHERE DATE("createdAt") = '${date}'
+        ORDER BY "createdAt" DESC
+      `)
+    } catch (orderError) {
+      console.log('Orders table query failed, using empty totals')
+      orders = []
+    }
 
     // Calculate totals by payment method
     const totals = {
