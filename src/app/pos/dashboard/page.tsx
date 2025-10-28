@@ -17,6 +17,7 @@ interface DashboardStats {
     card: number
     jazzcash: number
     easypaisa: number
+    credit: number
   }
 }
 
@@ -416,6 +417,13 @@ export default function POSDashboardPage() {
                   <span className="font-medium">EasyPaisa</span>
                 </div>
                 <span className="font-bold text-orange-600">{stats?.paymentMethods.easypaisa || 0}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <span className="text-lg">📝</span>
+                  <span className="font-medium">Credit</span>
+                </div>
+                <span className="font-bold text-yellow-600">{stats?.paymentMethods.credit || 0}</span>
               </div>
             </div>
           </div>

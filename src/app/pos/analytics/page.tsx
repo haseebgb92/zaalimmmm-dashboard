@@ -399,13 +399,15 @@ export default function AnalyticsPage() {
                   cash: 'from-green-500 to-emerald-500',
                   card: 'from-blue-500 to-indigo-500',
                   jazzcash: 'from-purple-500 to-pink-500',
-                  easypaisa: 'from-orange-500 to-red-500'
+                  easypaisa: 'from-orange-500 to-red-500',
+                  credit: 'from-yellow-500 to-amber-500'
                 }
                 const icons = {
                   cash: '💵',
                   card: '💳',
                   jazzcash: '📱',
-                  easypaisa: '📱'
+                  easypaisa: '📱',
+                  credit: '📝'
                 }
                 
                 return (

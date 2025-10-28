@@ -27,7 +27,7 @@ export default function POSPage() {
   const [newRider, setNewRider] = useState({ name: '', phoneNumber: '' })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showCartModal, setShowCartModal] = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'jazzcash' | 'easypaisa'>('cash')
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'jazzcash' | 'easypaisa' | 'credit'>('cash')
   const [transactionId, setTransactionId] = useState('')
   // const [appliedCoupon] = useState<{code: string, discount: number, type: string} | null>(null)
   interface HistoryItemProduct { id: number; name: string }
@@ -595,7 +595,7 @@ export default function POSPage() {
           {/* Payment Method */}
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               <button
                 onClick={() => setPaymentMethod('cash')}
                 className={`p-3 rounded-lg font-medium transition-all duration-200 ${
@@ -635,6 +635,16 @@ export default function POSPage() {
                 }`}
               >
                 📱 EasyPaisa
+              </button>
+              <button
+                onClick={() => setPaymentMethod('credit')}
+                className={`p-3 rounded-lg font-medium transition-all duration-200 ${
+                  paymentMethod === 'credit'
+                    ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                📝 Credit
               </button>
             </div>
             

@@ -165,6 +165,48 @@ export const posAdminUsers = pgTable('pos_admin_users', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// Daily Closing Tables
+export const posDailyClosing = pgTable('pos_daily_closing', {
+  id: serial('id').primaryKey(),
+  date: date('date').notNull(),
+  agentId: integer('agent_id').notNull(),
+  agentName: text('agent_name').notNull(),
+  // Auto-calculated amounts from orders
+  totalCashOrders: numeric('total_cash_orders', { precision: 10, scale: 2 }).default('0').notNull(),
+  totalCardOrders: numeric('total_card_orders', { precision: 10, scale: 2 }).default('0').notNull(),
+  totalJazzcashOrders: numeric('total_jazzcash_orders', { precision: 10, scale: 2 }).default('0').notNull(),
+  totalEasypaisaOrders: numeric('total_easypaisa_orders', { precision: 10, scale: 2 }).default('0').notNull(),
+  totalCreditOrders: numeric('total_credit_orders', { precision: 10, scale: 2 }).default('0').notNull(),
+  // Manual cash reconciliation
+  cashReceived: numeric('cash_received', { precision: 10, scale: 2 }).default('0').notNull(),
+  currencyNotes5000: integer('currency_notes_5000').default(0).notNull(),
+  currencyNotes1000: integer('currency_notes_1000').default(0).notNull(),
+  currencyNotes500: integer('currency_notes_500').default(0).notNull(),
+  currencyNotes100: integer('currency_notes_100').default(0).notNull(),
+  currencyNotes50: integer('currency_notes_50').default(0).notNull(),
+  currencyNotes20: integer('currency_notes_20').default(0).notNull(),
+  currencyNotes10: integer('currency_notes_10').default(0).notNull(),
+  // Calculated totals
+  calculatedCashTotal: numeric('calculated_cash_total', { precision: 10, scale: 2 }).default('0').notNull(),
+  cashDifference: numeric('cash_difference', { precision: 10, scale: 2 }).default('0').notNull(),
+  // Status
+  status: text('status').default('pending').notNull(), // pending, completed, verified
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  dateIdx: index('pos_daily_closing_date_idx').on(table.date),
+}));
+
+export const posDailyClosingLogs = pgTable('pos_daily_closing_logs', {
+  id: serial('id').primaryKey(),
+  closingId: integer('closing_id').notNull(),
+  action: text('action').notNull(), // created, updated, verified, etc.
+  details: text('details'),
+  performedBy: text('performed_by').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // Type exports
 export type Sales = typeof sales.$inferSelect;
 export type NewSales = typeof sales.$inferInsert;
@@ -196,3 +238,7 @@ export type PosLoyaltyTransaction = typeof posLoyaltyTransactions.$inferSelect;
 export type NewPosLoyaltyTransaction = typeof posLoyaltyTransactions.$inferInsert;
 export type PosAdminUser = typeof posAdminUsers.$inferSelect;
 export type NewPosAdminUser = typeof posAdminUsers.$inferInsert;
+export type PosDailyClosing = typeof posDailyClosing.$inferSelect;
+export type NewPosDailyClosing = typeof posDailyClosing.$inferInsert;
+export type PosDailyClosingLog = typeof posDailyClosingLogs.$inferSelect;
+export type NewPosDailyClosingLog = typeof posDailyClosingLogs.$inferInsert;

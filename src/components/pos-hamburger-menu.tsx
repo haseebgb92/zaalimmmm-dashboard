@@ -24,6 +24,7 @@ export function POSHamburgerMenu({ onLogout, currentPage }: POSHamburgerMenuProp
     { href: "/pos/menu", label: "Menu", icon: "📋" },
     { href: "/pos/customers", label: "Customers", icon: "👥" },
     { href: "/pos/riders", label: "Riders", icon: "🚚" },
+    { href: "/pos/daily-closing", label: "Daily Closing", icon: "💰" },
   ]
 
   const handleMenuItemClick = (href: string) => {

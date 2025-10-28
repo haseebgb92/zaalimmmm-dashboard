@@ -138,6 +138,7 @@ export async function GET(request: NextRequest) {
       card: 0,
       jazzcash: 0,
       easypaisa: 0,
+      credit: 0,
     };
 
     orders.forEach((order: Record<string, unknown>) => {
@@ -187,7 +188,7 @@ export async function GET(request: NextRequest) {
           averageOrderValue: 0,
           peakHour: 0,
           peakHourOrders: 0,
-          paymentMethods: { cash: 0, card: 0, jazzcash: 0, easypaisa: 0 },
+          paymentMethods: { cash: 0, card: 0, jazzcash: 0, easypaisa: 0, credit: 0 },
         },
         hourlyData: Array.from({ length: 24 }, (_, hour) => ({
           hour,
