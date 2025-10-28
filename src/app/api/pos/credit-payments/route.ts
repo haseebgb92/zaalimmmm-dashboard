@@ -66,12 +66,8 @@ export async function GET(request: NextRequest) {
     if (date) {
       const startOfDay = new Date(date + 'T00:00:00.000Z')
       const endOfDay = new Date(date + 'T23:59:59.999Z')
-      whereConditions.push(
-        and(
-          gte(posOrders.createdAt, startOfDay),
-          lt(posOrders.createdAt, endOfDay)
-        )
-      )
+      whereConditions.push(gte(posOrders.createdAt, startOfDay))
+      whereConditions.push(lt(posOrders.createdAt, endOfDay))
     }
 
     const orders = await db
