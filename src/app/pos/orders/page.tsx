@@ -73,7 +73,8 @@ export default function POSOrdersPage() {
       
       if (response.ok) {
         alert('Credit payment marked as paid successfully!')
-        fetchCreditOrders() // Refresh the list
+        fetchCreditOrders() // Refresh the credit orders list
+        fetchOrders() // Refresh the main orders list
       } else {
         const error = await response.json()
         alert(`Error: ${error.message}`)
