@@ -17,7 +17,6 @@ export default function POSOrdersPage() {
   const [refundOrder, setRefundOrder] = useState<PosOrder | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [creditOrders, setCreditOrders] = useState<PosOrder[]>([])
-  const [creditLoading, setCreditLoading] = useState(false)
   const router = useRouter()
 
   // Check authentication (only on client side)
@@ -53,7 +52,6 @@ export default function POSOrdersPage() {
 
   const fetchCreditOrders = async () => {
     try {
-      setCreditLoading(true)
       const response = await fetch('/api/pos/credit-payments?status=unpaid')
       const data = await response.json()
       if (data.success && Array.isArray(data.orders)) {
@@ -61,8 +59,6 @@ export default function POSOrdersPage() {
       }
     } catch (error) {
       console.error('Error fetching credit orders:', error)
-    } finally {
-      setCreditLoading(false)
     }
   }
 

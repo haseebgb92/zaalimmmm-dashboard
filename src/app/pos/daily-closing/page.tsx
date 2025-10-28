@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { POSHeader } from '@/components/pos-header'
 
 interface DailyClosingData {
@@ -42,9 +42,9 @@ export default function DailyClosingPage() {
 
   useEffect(() => {
     fetchDailyClosingData()
-  }, [selectedDate])
+  }, [selectedDate, fetchDailyClosingData])
 
-  const fetchDailyClosingData = async () => {
+  const fetchDailyClosingData = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch(`/api/pos/daily-closing?date=${selectedDate}`)
@@ -83,7 +83,7 @@ export default function DailyClosingPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedDate])
 
   const calculateCashTotal = () => {
     if (!closingData) return 0

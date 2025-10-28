@@ -55,19 +55,18 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') // 'unpaid' or 'paid'
     const date = searchParams.get('date')
 
-    let query = db.select().from(posOrders)
-      .where(eq(posOrders.paymentMethod, 'credit'))
+    let whereConditions = [eq(posOrders.paymentMethod, 'credit')]
 
     if (status === 'unpaid') {
-      query = query.where(eq(posOrders.creditPaid, false))
+      whereConditions.push(eq(posOrders.creditPaid, false))
     } else if (status === 'paid') {
-      query = query.where(eq(posOrders.creditPaid, true))
+      whereConditions.push(eq(posOrders.creditPaid, true))
     }
 
     if (date) {
       const startOfDay = new Date(date + 'T00:00:00.000Z')
       const endOfDay = new Date(date + 'T23:59:59.999Z')
-      query = query.where(
+      whereConditions.push(
         and(
           gte(posOrders.createdAt, startOfDay),
           lt(posOrders.createdAt, endOfDay)
@@ -75,7 +74,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const orders = await query.orderBy(desc(posOrders.createdAt))
+    const orders = await db
+      .select()
+      .from(posOrders)
+      .where(and(...whereConditions))
+      .orderBy(desc(posOrders.createdAt))
 
     return NextResponse.json({
       success: true,
