@@ -28,6 +28,7 @@ export default function POSPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showCartModal, setShowCartModal] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'jazzcash' | 'easypaisa' | 'credit'>('cash')
+  const [transactionId, setTransactionId] = useState('')
   const [businessDayStatus, setBusinessDayStatus] = useState<'open' | 'closed'>('closed')
   const [businessDayLoading, setBusinessDayLoading] = useState(false)
   // const [appliedCoupon] = useState<{code: string, discount: number, type: string} | null>(null)
