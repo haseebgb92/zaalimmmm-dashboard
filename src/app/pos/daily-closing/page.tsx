@@ -135,19 +135,19 @@ export default function DailyClosingPage() {
   const calculateCashTotal = () => {
     if (!closingData) return 0
     return (
-      closingData.currencyNotes5000 * 5000 +
-      closingData.currencyNotes1000 * 1000 +
-      closingData.currencyNotes500 * 500 +
-      closingData.currencyNotes100 * 100 +
-      closingData.currencyNotes50 * 50 +
-      closingData.currencyNotes20 * 20 +
-      closingData.currencyNotes10 * 10
+      (closingData.currencyNotes5000 || 0) * 5000 +
+      (closingData.currencyNotes1000 || 0) * 1000 +
+      (closingData.currencyNotes500 || 0) * 500 +
+      (closingData.currencyNotes100 || 0) * 100 +
+      (closingData.currencyNotes50 || 0) * 50 +
+      (closingData.currencyNotes20 || 0) * 20 +
+      (closingData.currencyNotes10 || 0) * 10
     )
   }
 
   const calculateDifference = () => {
     if (!closingData) return 0
-    return closingData.totalCashOrders - calculateCashTotal()
+    return (closingData.totalCashOrders || 0) - calculateCashTotal()
   }
 
   const updateCurrencyNote = (denomination: string, value: number) => {
@@ -331,23 +331,23 @@ export default function DailyClosingPage() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="font-medium">Cash Orders</span>
-                  <span className="font-bold text-green-600">Rs. {closingData?.totalCashOrders.toFixed(2) || '0.00'}</span>
+                  <span className="font-bold text-green-600">Rs. {(closingData?.totalCashOrders || 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="font-medium">Card Payments</span>
-                  <span className="font-bold text-blue-600">Rs. {closingData?.totalCardOrders.toFixed(2) || '0.00'}</span>
+                  <span className="font-bold text-blue-600">Rs. {(closingData?.totalCardOrders || 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="font-medium">JazzCash</span>
-                  <span className="font-bold text-purple-600">Rs. {closingData?.totalJazzcashOrders.toFixed(2) || '0.00'}</span>
+                  <span className="font-bold text-purple-600">Rs. {(closingData?.totalJazzcashOrders || 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="font-medium">EasyPaisa</span>
-                  <span className="font-bold text-orange-600">Rs. {closingData?.totalEasypaisaOrders.toFixed(2) || '0.00'}</span>
+                  <span className="font-bold text-orange-600">Rs. {(closingData?.totalEasypaisaOrders || 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="font-medium">Credit</span>
-                  <span className="font-bold text-yellow-600">Rs. {closingData?.totalCreditOrders.toFixed(2) || '0.00'}</span>
+                  <span className="font-bold text-yellow-600">Rs. {(closingData?.totalCreditOrders || 0).toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -395,7 +395,7 @@ export default function DailyClosingPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="font-medium">Expected Cash:</span>
-                      <span className="font-bold text-blue-600">Rs. {closingData?.totalCashOrders.toFixed(2) || '0.00'}</span>
+                      <span className="font-bold text-blue-600">Rs. {(closingData?.totalCashOrders || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between border-t pt-2">
                       <span className="font-medium">Difference:</span>
