@@ -33,7 +33,7 @@ export default function DailyClosingPage() {
   const [saving, setSaving] = useState(false)
   const [agentName, setAgentName] = useState('')
   const [notes, setNotes] = useState('')
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [lastUpdated, setLastUpdated] = useState<string>('')
 
   const handleLogout = () => {
     // Handle logout logic here
@@ -78,11 +78,19 @@ export default function DailyClosingPage() {
       console.error('Error fetching daily closing data:', error)
     } finally {
       setLoading(false)
+      setLastUpdated(new Date().toLocaleTimeString())
     }
   }, [selectedDate])
 
   useEffect(() => {
     fetchDailyClosingData()
+    
+    // Set up real-time updates every 30 seconds
+    const interval = setInterval(() => {
+      fetchDailyClosingData()
+    }, 30000) // Update every 30 seconds
+    
+    return () => clearInterval(interval)
   }, [selectedDate, fetchDailyClosingData])
 
   const calculateCashTotal = () => {
@@ -237,6 +245,11 @@ export default function DailyClosingPage() {
               <div>
                 <h1 className="text-2xl font-bold text-gray-800 mb-2">Daily Closing</h1>
                 <p className="text-gray-600">Reconcile daily payments and cash received</p>
+                {lastUpdated && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Last updated: {lastUpdated} 🔄
+                  </p>
+                )}
               </div>
               <div className="mt-4 md:mt-0">
                 <input

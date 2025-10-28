@@ -28,7 +28,8 @@ export default function POSPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showCartModal, setShowCartModal] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'jazzcash' | 'easypaisa' | 'credit'>('cash')
-  const [transactionId, setTransactionId] = useState('')
+  const [businessDayStatus, setBusinessDayStatus] = useState<'open' | 'closed'>('closed')
+  const [businessDayLoading, setBusinessDayLoading] = useState(false)
   // const [appliedCoupon] = useState<{code: string, discount: number, type: string} | null>(null)
   interface HistoryItemProduct { id: number; name: string }
   interface HistoryItem { quantity: number; product?: HistoryItemProduct }
@@ -65,8 +66,50 @@ export default function POSPage() {
       // Load data
       fetchProducts()
       fetchRiders()
+      fetchBusinessDayStatus()
     }
   }, [router])
+
+  const fetchBusinessDayStatus = async () => {
+    try {
+      const response = await fetch('/api/pos/business-day')
+      const data = await response.json()
+      setBusinessDayStatus(data.status)
+    } catch (error) {
+      console.error('Error fetching business day status:', error)
+    }
+  }
+
+  const toggleBusinessDay = async () => {
+    try {
+      setBusinessDayLoading(true)
+      const userName = localStorage.getItem('userName') || 'Unknown'
+      const action = businessDayStatus === 'closed' ? 'open' : 'close'
+      
+      const response = await fetch('/api/pos/business-day', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action, 
+          [action === 'open' ? 'openedBy' : 'closedBy']: userName 
+        })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        setBusinessDayStatus(result.businessDay.status)
+        alert(result.message)
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error toggling business day:', error)
+      alert('Error managing business day')
+    } finally {
+      setBusinessDayLoading(false)
+    }
+  }
 
   const fetchProducts = async () => {
     try {
@@ -330,6 +373,17 @@ export default function POSPage() {
             
             {/* Desktop Navigation */}
             <div className="hidden lg:flex flex-wrap gap-2">
+              <button
+                onClick={toggleBusinessDay}
+                disabled={businessDayLoading}
+                className={`px-4 py-2 rounded-lg text-sm font-medium shadow-md transition-all duration-200 transform hover:scale-105 ${
+                  businessDayStatus === 'open'
+                    ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600'
+                    : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600'
+                } ${businessDayLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {businessDayLoading ? '⏳' : businessDayStatus === 'open' ? '🔒 Close Day' : '🔓 Open Day'}
+              </button>
               <a 
                 href="/pos/dashboard" 
                 className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 py-2 rounded-lg hover:from-indigo-600 hover:to-purple-600 text-sm font-medium shadow-md transition-all duration-200 transform hover:scale-105"
@@ -411,6 +465,23 @@ export default function POSPage() {
         {mobileMenuOpen && (
           <div className="lg:hidden bg-white border-t border-gray-200 shadow-lg">
             <div className="px-4 py-3 space-y-2">
+              <button
+                onClick={() => {
+                  toggleBusinessDay()
+                  setMobileMenuOpen(false)
+                }}
+                disabled={businessDayLoading}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  businessDayStatus === 'open'
+                    ? 'bg-gradient-to-r from-red-50 to-pink-50 text-red-700 hover:from-red-100 hover:to-pink-100'
+                    : 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 hover:from-green-100 hover:to-emerald-100'
+                } ${businessDayLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <span className="text-lg">{businessDayLoading ? '⏳' : businessDayStatus === 'open' ? '🔒' : '🔓'}</span>
+                <span className="font-medium">
+                  {businessDayLoading ? 'Processing...' : businessDayStatus === 'open' ? 'Close Day' : 'Open Day'}
+                </span>
+              </button>
               <a 
                 href="/pos/dashboard" 
                 className="flex items-center space-x-3 bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-700 px-4 py-3 rounded-lg hover:from-indigo-100 hover:to-purple-100 transition-colors"

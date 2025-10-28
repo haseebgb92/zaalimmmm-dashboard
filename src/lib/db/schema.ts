@@ -210,6 +210,22 @@ export const posDailyClosingLogs = pgTable('pos_daily_closing_logs', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Business Day Management Table
+export const posBusinessDay = pgTable('pos_business_day', {
+  id: serial('id').primaryKey(),
+  date: date('date').notNull(),
+  status: text('status').notNull(), // open, closed
+  openedAt: timestamp('opened_at'),
+  closedAt: timestamp('closed_at'),
+  openedBy: text('opened_by'),
+  closedBy: text('closed_by'),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  dateIdx: index('pos_business_day_date_idx').on(table.date),
+}));
+
 // Type exports
 export type Sales = typeof sales.$inferSelect;
 export type NewSales = typeof sales.$inferInsert;
@@ -245,3 +261,5 @@ export type PosDailyClosing = typeof posDailyClosing.$inferSelect;
 export type NewPosDailyClosing = typeof posDailyClosing.$inferInsert;
 export type PosDailyClosingLog = typeof posDailyClosingLogs.$inferSelect;
 export type NewPosDailyClosingLog = typeof posDailyClosingLogs.$inferInsert;
+export type PosBusinessDay = typeof posBusinessDay.$inferSelect;
+export type NewPosBusinessDay = typeof posBusinessDay.$inferInsert;
