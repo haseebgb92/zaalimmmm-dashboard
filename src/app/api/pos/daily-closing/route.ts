@@ -6,24 +6,11 @@ import { eq } from 'drizzle-orm'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const date = searchParams.get('date')
+    const date = searchParams.get('date') || new Date().toISOString().split('T')[0]
     
-    if (!date) {
-      return NextResponse.json({ error: 'Date parameter is required' }, { status: 400 })
-    }
+    console.log(`Fetching daily closing data for date: ${date}`)
 
-    // Get existing daily closing record
-    const existingClosing = await db
-      .select()
-      .from(posDailyClosing)
-      .where(eq(posDailyClosing.date, date))
-      .limit(1)
-
-    if (existingClosing.length > 0) {
-      return NextResponse.json(existingClosing[0])
-    }
-
-    // If no existing record, calculate totals from orders for the day using raw SQL
+    // Always calculate real-time totals from orders for the day
     let orders: { finalAmount: string | number; paymentMethod?: string }[] = []
     try {
       orders = await db.execute(`
@@ -32,12 +19,13 @@ export async function GET(request: NextRequest) {
         WHERE DATE("createdAt") = '${date}'
         ORDER BY "createdAt" DESC
       `)
+      console.log(`Found ${orders.length} orders for ${date}`)
     } catch {
       console.log('Orders table query failed, using empty totals')
       orders = []
     }
 
-    // Calculate totals by payment method
+    // Calculate real-time totals by payment method
     const totals = {
       cash: 0,
       card: 0,
@@ -56,29 +44,51 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Return calculated data for new daily closing
-    return NextResponse.json({
+    console.log('Calculated totals:', totals)
+
+    // Get existing daily closing record for manual entries (cash received, currency notes)
+    let existingClosing = null
+    try {
+      const existing = await db
+        .select()
+        .from(posDailyClosing)
+        .where(eq(posDailyClosing.date, date))
+        .limit(1)
+      
+      if (existing.length > 0) {
+        existingClosing = existing[0]
+      }
+    } catch {
+      console.log('Daily closing table query failed, using defaults')
+    }
+
+    // Return real-time data with manual entries if they exist
+    const response = {
+      id: existingClosing?.id || null,
       date,
-      agentId: 1,
-      agentName: '',
+      agentId: existingClosing?.agentId || 1,
+      agentName: existingClosing?.agentName || '',
       totalCashOrders: totals.cash,
       totalCardOrders: totals.card,
       totalJazzcashOrders: totals.jazzcash,
       totalEasypaisaOrders: totals.easypaisa,
       totalCreditOrders: totals.credit,
-      cashReceived: 0,
-      currencyNotes5000: 0,
-      currencyNotes1000: 0,
-      currencyNotes500: 0,
-      currencyNotes100: 0,
-      currencyNotes50: 0,
-      currencyNotes20: 0,
-      currencyNotes10: 0,
-      calculatedCashTotal: 0,
-      cashDifference: 0,
-      status: 'pending',
-      notes: ''
-    })
+      cashReceived: existingClosing?.cashReceived || 0,
+      currencyNotes5000: existingClosing?.currencyNotes5000 || 0,
+      currencyNotes1000: existingClosing?.currencyNotes1000 || 0,
+      currencyNotes500: existingClosing?.currencyNotes500 || 0,
+      currencyNotes100: existingClosing?.currencyNotes100 || 0,
+      currencyNotes50: existingClosing?.currencyNotes50 || 0,
+      currencyNotes20: existingClosing?.currencyNotes20 || 0,
+      currencyNotes10: existingClosing?.currencyNotes10 || 0,
+      calculatedCashTotal: existingClosing?.calculatedCashTotal || 0,
+      cashDifference: existingClosing?.cashDifference || 0,
+      status: existingClosing?.status || 'pending',
+      notes: existingClosing?.notes || '',
+      lastUpdated: new Date().toISOString()
+    }
+
+    return NextResponse.json(response)
 
   } catch (error) {
     console.error('Error fetching daily closing data:', error)

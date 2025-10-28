@@ -35,10 +35,42 @@ export default function DailyClosingPage() {
   const [agentName, setAgentName] = useState('')
   const [notes, setNotes] = useState('')
   const [lastUpdated, setLastUpdated] = useState<string>('')
+  const [completing, setCompleting] = useState(false)
 
-  const handleLogout = () => {
-    // Handle logout logic here
-    window.location.href = '/login'
+  const completeDay = async () => {
+    if (!confirm(`Are you sure you want to complete the day for ${selectedDate}? This will finalize all transactions for this date.`)) {
+      return
+    }
+
+    try {
+      setCompleting(true)
+      const userName = localStorage.getItem('userName') || 'Unknown'
+      
+      const response = await fetch('/api/pos/daily-closing/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          date: selectedDate,
+          agentName: userName,
+          notes: notes || `Daily closing completed by ${userName}`
+        })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        alert(`Day completed successfully! Total orders: Rs. ${Object.values(result.totals).reduce((a: number, b: number) => a + b, 0).toFixed(2)}`)
+        // Refresh data to show completed status
+        fetchDailyClosingData()
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error completing day:', error)
+      alert('Error completing day')
+    } finally {
+      setCompleting(false)
+    }
   }
 
   const fetchDailyClosingData = useCallback(async () => {
@@ -264,6 +296,17 @@ export default function DailyClosingPage() {
                   className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200"
                 >
                   🔄 Refresh
+                </button>
+                <button
+                  onClick={completeDay}
+                  disabled={completing || closingData?.status === 'completed'}
+                  className={`px-4 py-2 rounded-lg transition-all duration-200 ml-2 ${
+                    closingData?.status === 'completed'
+                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600'
+                  } ${completing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {completing ? '⏳ Completing...' : closingData?.status === 'completed' ? '✅ Completed' : '✅ Complete Day'}
                 </button>
               </div>
             </div>
