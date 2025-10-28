@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { posDailyClosing, posDailyClosingLogs, posOrders } from '@/lib/db/schema'
-import { eq, and, gte, lt } from 'drizzle-orm'
+import { posDailyClosing, posDailyClosingLogs } from '@/lib/db/schema'
+import { eq } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,19 +23,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(existingClosing[0])
     }
 
-    // If no existing record, calculate totals from orders for the day
-    const startOfDay = new Date(date + 'T00:00:00.000Z')
-    const endOfDay = new Date(date + 'T23:59:59.999Z')
-
-    const orders = await db
-      .select()
-      .from(posOrders)
-      .where(
-        and(
-          gte(posOrders.createdAt, startOfDay),
-          lt(posOrders.createdAt, endOfDay)
-        )
-      )
+    // If no existing record, calculate totals from orders for the day using raw SQL
+    const orders = await db.execute(`
+      SELECT "finalAmount", "paymentMethod"
+      FROM pos_orders 
+      WHERE DATE("createdAt") = '${date}'
+      ORDER BY "createdAt" DESC
+    `)
 
     // Calculate totals by payment method
     const totals = {
@@ -46,7 +40,7 @@ export async function GET(request: NextRequest) {
       credit: 0
     }
 
-    orders.forEach(order => {
+    orders.forEach((order: any) => {
       const amount = parseFloat(order.finalAmount.toString())
       const method = order.paymentMethod || 'cash'
       

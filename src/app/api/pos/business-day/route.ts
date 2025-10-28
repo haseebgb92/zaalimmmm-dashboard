@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { posBusinessDay } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date') || new Date().toISOString().split('T')[0]
 
-    // Get business day status for the specified date
-    const businessDay = await db
-      .select()
-      .from(posBusinessDay)
-      .where(eq(posBusinessDay.date, date))
-      .limit(1)
+    // Get business day status for the specified date using raw SQL
+    const businessDay = await db.execute(`
+      SELECT * FROM pos_business_day 
+      WHERE date = '${date}' 
+      LIMIT 1
+    `)
 
     if (businessDay.length > 0) {
       return NextResponse.json(businessDay[0])
@@ -47,41 +45,32 @@ export async function POST(request: NextRequest) {
     const today = new Date().toISOString().split('T')[0]
     
     if (action === 'open') {
-      // Check if already open
-      const existing = await db
-        .select()
-        .from(posBusinessDay)
-        .where(eq(posBusinessDay.date, today))
-        .limit(1)
+      // Check if already open using raw SQL
+      const existing = await db.execute(`
+        SELECT * FROM pos_business_day 
+        WHERE date = '${today}' AND status = 'open'
+        LIMIT 1
+      `)
 
-      if (existing.length > 0 && existing[0].status === 'open') {
+      if (existing.length > 0) {
         return NextResponse.json(
           { error: 'Business day is already open' },
           { status: 400 }
         )
       }
 
-      // Open business day
-      const result = await db
-        .insert(posBusinessDay)
-        .values({
-          date: today,
-          status: 'open',
-          openedAt: new Date(),
-          openedBy: openedBy || 'Unknown',
-          notes
-        })
-        .onConflictDoUpdate({
-          target: posBusinessDay.date,
-          set: {
-            status: 'open',
-            openedAt: new Date(),
-            openedBy: openedBy || 'Unknown',
-            notes,
-            updatedAt: new Date()
-          }
-        })
-        .returning()
+      // Open business day using raw SQL
+      const result = await db.execute(`
+        INSERT INTO pos_business_day (date, status, "openedAt", "openedBy", notes, "createdAt", "updatedAt")
+        VALUES ('${today}', 'open', NOW(), '${openedBy || 'Unknown'}', ${notes ? `'${notes.replace(/'/g, "''")}'` : 'NULL'}, NOW(), NOW())
+        ON CONFLICT (date) DO UPDATE SET
+          status = 'open',
+          "openedAt" = NOW(),
+          "openedBy" = '${openedBy || 'Unknown'}',
+          notes = ${notes ? `'${notes.replace(/'/g, "''")}'` : 'NULL'},
+          "updatedAt" = NOW()
+        RETURNING *
+      `)
 
       return NextResponse.json({
         success: true,
@@ -90,18 +79,17 @@ export async function POST(request: NextRequest) {
       })
 
     } else if (action === 'close') {
-      // Close business day
-      const result = await db
-        .update(posBusinessDay)
-        .set({
-          status: 'closed',
-          closedAt: new Date(),
-          closedBy: closedBy || 'Unknown',
-          notes,
-          updatedAt: new Date()
-        })
-        .where(eq(posBusinessDay.date, today))
-        .returning()
+      // Close business day using raw SQL
+      const result = await db.execute(`
+        UPDATE pos_business_day 
+        SET status = 'closed',
+            "closedAt" = NOW(),
+            "closedBy" = '${closedBy || 'Unknown'}',
+            notes = ${notes ? `'${notes.replace(/'/g, "''")}'` : 'NULL'},
+            "updatedAt" = NOW()
+        WHERE date = '${today}' AND status = 'open'
+        RETURNING *
+      `)
 
       if (result.length === 0) {
         return NextResponse.json(
