@@ -37,6 +37,11 @@ export default function DailyClosingPage() {
   const [lastUpdated, setLastUpdated] = useState<string>('')
   const [completing, setCompleting] = useState(false)
 
+  const handleLogout = () => {
+    // Handle logout logic here
+    window.location.href = '/login'
+  }
+
   const completeDay = async () => {
     if (!confirm(`Are you sure you want to complete the day for ${selectedDate}? This will finalize all transactions for this date.`)) {
       return
