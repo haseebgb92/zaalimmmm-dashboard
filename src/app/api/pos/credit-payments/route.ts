@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') // 'unpaid' or 'paid'
     const date = searchParams.get('date')
 
-    let whereConditions = [eq(posOrders.paymentMethod, 'credit')]
+    const whereConditions = [eq(posOrders.paymentMethod, 'credit')]
 
     if (status === 'unpaid') {
       whereConditions.push(eq(posOrders.creditPaid, false))
