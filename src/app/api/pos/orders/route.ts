@@ -18,6 +18,9 @@ export async function GET() {
         "paymentMethod",
         "transactionId",
         notes,
+        "creditPaid",
+        "creditPaidAt",
+        "creditPaidBy",
         "createdAt",
         "updatedAt"
       FROM pos_orders 
@@ -83,7 +86,7 @@ export async function POST(request: NextRequest) {
       INSERT INTO pos_orders (
         "orderNumber", "customerId", "riderId", "totalAmount", 
         "discountAmount", "finalAmount", "orderType", "paymentMethod", 
-        "transactionId", status, "createdAt", "updatedAt"
+        "transactionId", status, "creditPaid", "createdAt", "updatedAt"
       ) VALUES (
         '${orderNumber.replace(/'/g, "\'")}', 
         ${customerId || 'NULL'}, 
@@ -95,6 +98,7 @@ export async function POST(request: NextRequest) {
         '${paymentMethod.replace(/'/g, "\'")}', 
         ${transactionId ? `'${transactionId.replace(/'/g, "\'")}'` : 'NULL'}, 
         'completed', 
+        ${paymentMethod === 'credit' ? 'false' : 'NULL'}, 
         NOW(), 
         NOW()
       ) RETURNING id

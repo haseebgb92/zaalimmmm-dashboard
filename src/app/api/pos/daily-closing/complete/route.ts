@@ -13,10 +13,10 @@ export async function POST(request: NextRequest) {
     console.log(`Completing daily closing for date: ${date}`)
 
     // Get current day's data with error handling
-    let orders: { finalAmount: string | number; paymentMethod?: string }[] = []
+    let orders: { finalAmount: string | number; paymentMethod?: string; creditPaid?: boolean }[] = []
     try {
       orders = await db.execute(`
-        SELECT "finalAmount", "paymentMethod"
+        SELECT "finalAmount", "paymentMethod", "creditPaid"
         FROM pos_orders 
         WHERE DATE("createdAt") = '${date}'
         ORDER BY "createdAt" DESC
@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate final totals
+    // IMPORTANT: Paid credit orders should be counted as CASH for daily closing
     const totals = {
       cash: 0,
       card: 0,
@@ -37,11 +38,15 @@ export async function POST(request: NextRequest) {
     }
 
     orders.forEach((order) => {
-      const typedOrder = order as { finalAmount: string | number; paymentMethod?: string }
+      const typedOrder = order as { finalAmount: string | number; paymentMethod?: string; creditPaid?: boolean }
       const amount = parseFloat(typedOrder.finalAmount.toString())
       const method = typedOrder.paymentMethod || 'cash'
+      const isCreditPaid = typedOrder.creditPaid || false
       
-      if (method in totals) {
+      // If it's a credit order that has been paid, count it as cash
+      if (method === 'credit' && isCreditPaid) {
+        totals.cash += amount
+      } else if (method in totals) {
         totals[method as keyof typeof totals] += amount
       }
     })

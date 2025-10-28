@@ -52,15 +52,16 @@ export default function POSOrdersPage() {
 
   const fetchCreditOrders = async () => {
     try {
-      // Temporarily disabled to test basic orders functionality
-      // const response = await fetch('/api/pos/credit-payments?status=unpaid')
-      // const data = await response.json()
-      // if (data.success && Array.isArray(data.orders)) {
-      //   setCreditOrders(data.orders)
-      // }
-      setCreditOrders([]) // Empty array for now
+      const response = await fetch('/api/pos/credit-payments?status=unpaid')
+      const data = await response.json()
+      if (data.success && Array.isArray(data.orders)) {
+        setCreditOrders(data.orders)
+      } else {
+        setCreditOrders([])
+      }
     } catch (error) {
       console.error('Error fetching credit orders:', error)
+      setCreditOrders([])
     }
   }
 
