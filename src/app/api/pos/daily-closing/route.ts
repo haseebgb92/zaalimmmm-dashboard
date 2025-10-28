@@ -40,9 +40,10 @@ export async function GET(request: NextRequest) {
       credit: 0
     }
 
-    orders.forEach((order: { finalAmount: string | number; paymentMethod?: string }) => {
-      const amount = parseFloat(order.finalAmount.toString())
-      const method = order.paymentMethod || 'cash'
+    orders.forEach((order) => {
+      const typedOrder = order as { finalAmount: string | number; paymentMethod?: string }
+      const amount = parseFloat(typedOrder.finalAmount.toString())
+      const method = typedOrder.paymentMethod || 'cash'
       
       if (method in totals) {
         totals[method as keyof typeof totals] += amount
