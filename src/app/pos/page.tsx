@@ -366,6 +366,12 @@ export default function POSPage() {
               >
                 🚚 Riders
               </a>
+              <a
+                href="/pos/daily-closing" 
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-2 rounded-lg hover:from-emerald-600 hover:to-teal-600 text-sm font-medium shadow-md transition-all duration-200 transform hover:scale-105"
+              >
+                💰 Daily Closing
+              </a>
               <button
                 onClick={handleLogout}
                 className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-lg hover:from-gray-600 hover:to-gray-700 text-sm font-medium shadow-md transition-all duration-200 transform hover:scale-105"
@@ -452,6 +458,14 @@ export default function POSPage() {
               >
                 <span className="text-lg">🚚</span>
                 <span className="font-medium">Riders</span>
+              </a>
+              <a
+                href="/pos/daily-closing" 
+                className="flex items-center space-x-3 bg-gradient-to-r from-emerald-50 to-teal-50 text-gray-700 px-4 py-3 rounded-lg hover:from-emerald-100 hover:to-teal-100 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span className="text-lg">💰</span>
+                <span className="font-medium">Daily Closing</span>
               </a>
               <button
                 onClick={handleLogout}

@@ -16,6 +16,8 @@ export default function POSOrdersPage() {
   const [showRefundModal, setShowRefundModal] = useState(false)
   const [refundOrder, setRefundOrder] = useState<PosOrder | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [creditOrders, setCreditOrders] = useState<PosOrder[]>([])
+  const [creditLoading, setCreditLoading] = useState(false)
   const router = useRouter()
 
   // Check authentication (only on client side)
@@ -31,6 +33,7 @@ export default function POSOrdersPage() {
 
       // Load orders
       fetchOrders()
+      fetchCreditOrders()
     }
   }, [router])
 
@@ -45,6 +48,43 @@ export default function POSOrdersPage() {
       console.error('Error fetching orders:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchCreditOrders = async () => {
+    try {
+      setCreditLoading(true)
+      const response = await fetch('/api/pos/credit-payments?status=unpaid')
+      const data = await response.json()
+      if (data.success && Array.isArray(data.orders)) {
+        setCreditOrders(data.orders)
+      }
+    } catch (error) {
+      console.error('Error fetching credit orders:', error)
+    } finally {
+      setCreditLoading(false)
+    }
+  }
+
+  const markCreditAsPaid = async (orderId: number) => {
+    try {
+      const userName = localStorage.getItem('userName') || 'Unknown'
+      const response = await fetch('/api/pos/credit-payments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, paidBy: userName })
+      })
+      
+      if (response.ok) {
+        alert('Credit payment marked as paid successfully!')
+        fetchCreditOrders() // Refresh the list
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.message}`)
+      }
+    } catch (error) {
+      console.error('Error marking credit as paid:', error)
+      alert('Error marking credit as paid')
     }
   }
 
@@ -164,6 +204,41 @@ export default function POSOrdersPage() {
             </p>
           </div>
         </div>
+
+        {/* Credit Payments Section */}
+        {creditOrders.length > 0 && (
+          <div className="mb-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+              <span className="w-6 h-6 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-lg flex items-center justify-center mr-2">
+                <span className="text-white text-xs">📝</span>
+              </span>
+              Unpaid Credit Orders
+            </h3>
+            <div className="space-y-3">
+              {creditOrders.map((order) => (
+                <div key={order.id} className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-4">
+                      <div>
+                        <p className="font-medium text-gray-800">Order #{order.orderNumber}</p>
+                        <p className="text-sm text-gray-600">
+                          Amount: ₨{Number(order.finalAmount).toFixed(2)} | 
+                          Date: {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => markCreditAsPaid(order.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-200 transform hover:scale-105"
+                  >
+                    Mark as Paid
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Search */}
         <div className="mb-6">

@@ -89,6 +89,9 @@ export const posOrders = pgTable('pos_orders', {
   orderType: text('order_type').default('dine-in').notNull(),
   paymentMethod: text('payment_method'),
   transactionId: text('transaction_id'),
+  creditPaid: boolean('credit_paid').default(false).notNull(), // Track if credit order is paid
+  creditPaidAt: timestamp('credit_paid_at'), // When credit was paid
+  creditPaidBy: text('credit_paid_by'), // Who marked it as paid
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
