@@ -59,18 +59,28 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Open business day using raw SQL
-      const result = await db.execute(`
-        INSERT INTO pos_business_day (date, status, "openedAt", "openedBy", notes, "createdAt", "updatedAt")
-        VALUES ('${today}', 'open', NOW(), '${openedBy || 'Unknown'}', ${notes ? `'${notes.replace(/'/g, "''")}'` : 'NULL'}, NOW(), NOW())
-        ON CONFLICT (date) DO UPDATE SET
-          status = 'open',
-          "openedAt" = NOW(),
-          "openedBy" = '${openedBy || 'Unknown'}',
-          notes = ${notes ? `'${notes.replace(/'/g, "''")}'` : 'NULL'},
-          "updatedAt" = NOW()
-        RETURNING *
-      `)
+      // Open business day using raw SQL - simplified approach
+      let result
+      try {
+        // Try to insert first
+        result = await db.execute(`
+          INSERT INTO pos_business_day (date, status, "openedAt", "openedBy", notes, "createdAt", "updatedAt")
+          VALUES ('${today}', 'open', NOW(), '${openedBy || 'Unknown'}', ${notes ? `'${notes.replace(/'/g, "''")}'` : 'NULL'}, NOW(), NOW())
+          RETURNING *
+        `)
+      } catch (insertError) {
+        // If insert fails (likely due to duplicate), try update
+        result = await db.execute(`
+          UPDATE pos_business_day 
+          SET status = 'open',
+              "openedAt" = NOW(),
+              "openedBy" = '${openedBy || 'Unknown'}',
+              notes = ${notes ? `'${notes.replace(/'/g, "''")}'` : 'NULL'},
+              "updatedAt" = NOW()
+          WHERE date = '${today}'
+          RETURNING *
+        `)
+      }
 
       return NextResponse.json({
         success: true,
@@ -113,8 +123,19 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error managing business day:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      action,
+      today,
+      openedBy,
+      closedBy
+    })
     return NextResponse.json(
-      { error: 'Failed to manage business day' },
+      { 
+        error: 'Failed to manage business day',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
