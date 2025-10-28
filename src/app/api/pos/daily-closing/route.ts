@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       credit: 0
     }
 
-    orders.forEach((order: any) => {
+    orders.forEach((order: { finalAmount: string | number; paymentMethod?: string }) => {
       const amount = parseFloat(order.finalAmount.toString())
       const method = order.paymentMethod || 'cash'
       
