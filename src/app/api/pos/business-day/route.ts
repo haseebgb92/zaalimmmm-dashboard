@@ -38,11 +38,19 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  let action: string | undefined
+  let today: string | undefined
+  let openedBy: string | undefined
+  let closedBy: string | undefined
+  
   try {
     const body = await request.json()
-    const { action, openedBy, closedBy, notes } = body // action: 'open' or 'close'
+    const { action: bodyAction, openedBy: bodyOpenedBy, closedBy: bodyClosedBy, notes } = body // action: 'open' or 'close'
     
-    const today = new Date().toISOString().split('T')[0]
+    action = bodyAction
+    openedBy = bodyOpenedBy
+    closedBy = bodyClosedBy
+    today = new Date().toISOString().split('T')[0]
     
     if (action === 'open') {
       // Check if already open using raw SQL
@@ -68,7 +76,7 @@ export async function POST(request: NextRequest) {
           VALUES ('${today}', 'open', NOW(), '${openedBy || 'Unknown'}', ${notes ? `'${notes.replace(/'/g, "''")}'` : 'NULL'}, NOW(), NOW())
           RETURNING *
         `)
-      } catch (insertError) {
+      } catch {
         // If insert fails (likely due to duplicate), try update
         result = await db.execute(`
           UPDATE pos_business_day 
